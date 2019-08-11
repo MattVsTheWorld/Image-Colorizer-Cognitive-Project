@@ -7,6 +7,9 @@ import os
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 # Set verbosity of warnings allowed (higher number, less warnings)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# ------------------- REFS -------------------
+# https://colab.research.google.com/github/tensorflow/docs/blob/master/site/en/guide/keras.ipynb#scrollTo=PMOWhDOB0E3E
+# --------------------------------------------
 
 # ---------------------
 # ----- Esempio 1 -----
