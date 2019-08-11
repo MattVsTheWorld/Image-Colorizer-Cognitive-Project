@@ -13,3 +13,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # Da mettere una sola volta all'inizio del programma
 tf.enable_eager_execution()
+
+# check
+tf.executing_eagerly()
+
+# ...
