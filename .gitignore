@@ -1,2 +1,6 @@
 # Ignore the dataset
 imagenet/
+venv/
+.idea/Cognitive-Project.iml
+.idea/workspace.xml
+.idea/misc.xml
