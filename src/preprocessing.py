@@ -14,7 +14,8 @@ img = cv2.cvtColor(cv2.imread(os.pardir + '/imagenet/a_subfolder/twitch.jpg', cv
 
 imgBW = img.copy()
 for i in range(0, 256):
-    imgBW[i] = imgBW[i].take(1)
-
+    for j in range(0, 256):
+        imgBW[i][j] = imgBW[i][j].take(1)
+        
 cv2.imshow('img', imgBW)
 cv2.waitKey()
