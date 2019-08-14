@@ -13,22 +13,25 @@ def loss_l3(found, truth):
 
 
 def main():
-    IMG_SIZE = 256
-    # Allows INFO logs to be printed
+    # --- Parameters ---
+    image_size = 256
+    # ------------------
+    # --- Tensorflow warning settings ---
     tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
-    # Set verbosity of warnings allowed (higher number, less warnings)
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     # --------------------------------------
-    loader = ImageLoader(IMG_SIZE)
-    train_images, train_labels = loader.load_folder(os.pardir + '/test_imgs/a_subfolder')
+    loader = ImageLoader(image_size)
+    train_images, train_labels = loader.load_folder(os.pardir
+                                                    + '/imagenet/ILSVRC2017_CLS-LOC/ILSVRC/Data/CLS-LOC/train/n01828970'
+                                                    , image_format='jpeg')
     # iterator = dataset.make_one_shot_iterator()
     # next_element = iterator.get_next()
 
-    train_images = train_images.reshape((-1, IMG_SIZE, IMG_SIZE, 1))
+    train_images = train_images.reshape((-1, image_size, image_size, 1))
     # train_labels = train_labels.reshape((-1, 256, 256, 3))
 
     model = keras.Sequential()
-    model.add(keras.layers.Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=(IMG_SIZE, IMG_SIZE, 1)))
+    model.add(keras.layers.Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=(image_size, image_size, 1)))
     model.add(keras.layers.Conv2D(16, (3, 3), padding='same', activation='relu'))
     model.add(keras.layers.Conv2D(3, (3, 3), padding='same', activation='relu'))
     # model.add(keras.layers.MaxPooling2D((2, 2)))
@@ -37,14 +40,16 @@ def main():
     # model.summary()
     model.compile(optimizer='adam',
                   loss=loss_l3)
-    model.fit(train_images, train_labels, epochs=200)
+    model.fit(train_images, train_labels, epochs=50)
 
-    img, kappa = loader.load_img(os.pardir + '/test_imgs/a_subfolder/twitch.jpg')
-    cv2.imshow('lul', cv2.cvtColor(kappa, cv2.COLOR_Lab2BGR))
+    # /imagenet/ILSVRC2017_CLS-LOC/ILSVRC/Data/CLS-LOC/train/n01828970/n01828970_62.jpeg
+    img_bw, img_color = loader.load_img(os.pardir + '/imagenet/ILSVRC2017_CLS-LOC/ILSVRC/Data/'
+                                                    'CLS-LOC/train/n01828970/n01828970_62.jpeg')
+    cv2.imshow('lul', cv2.cvtColor(img_color, cv2.COLOR_Lab2BGR))
     cv2.waitKey()
-    img = np.expand_dims(img, axis=0)
-    img = np.expand_dims(img, axis=3)
-    result = model.predict(img)
+    img_bw = np.expand_dims(img_bw, axis=0)
+    img_bw = np.expand_dims(img_bw, axis=3)
+    result = model.predict(img_bw)
     cv2.imshow('lul', cv2.cvtColor(result[0], cv2.COLOR_Lab2BGR))
     cv2.waitKey()
 

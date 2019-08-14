@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 import cv2
 from glob import glob
-
+from tqdm import tqdm
 
 class ImageLoader:
     def __init__(self, img_size=256):
@@ -24,19 +24,20 @@ class ImageLoader:
                 # img_bw[i][j][2] = 0
         return img_bw, img_color
 
-    def load_folder(self, folder_path):
+    def load_folder(self, folder_path, image_format='jpeg'):
         examples = []
         labels = []
-        for filename in glob(folder_path + '/*.jpg'):
+        print("Loading files from folder...")
+        for filename in tqdm(glob(folder_path + '/*.' + image_format)):
             img_bw, img_color = self.load_img(filename)
             examples.append(img_bw)
             labels.append(img_color)
         return np.array(examples), np.array(labels)
 
-    def create_dataset(self, folder_path):
+    def create_dataset(self, folder_path, image_format='jpeg'):
         # dataset will be a sequence of tf.Tensor couples
         # (img_bw, img_color)   where the color image is the ground truth
-        return tf.data.Dataset.from_tensor_slices(self.load_folder(folder_path))
+        return tf.data.Dataset.from_tensor_slices(self.load_folder(folder_path, image_format))
 
 
 def main():
