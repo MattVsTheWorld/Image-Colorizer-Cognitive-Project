@@ -15,15 +15,16 @@ def loss_l3(found, truth):
 def main():
     # --- Parameters ---
     image_size = 256
+    img_format = 'jpeg'
     # ------------------
     # --- Tensorflow warning settings ---
     tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     # --------------------------------------
-    loader = ImageLoader(image_size)
+    loader = ImageLoader(image_size, img_format)
     train_images, train_labels = loader.load_folder(os.pardir
-                                                    + '/imagenet/ILSVRC2017_CLS-LOC/ILSVRC/Data/CLS-LOC/train/n01828970'
-                                                    , image_format='jpeg')
+                                                    + '/imagenet/ILSVRC2017_CLS-LOC/ILSVRC/Data/CLS-LOC/train/n01828970',
+                                                    mp=True)
     # iterator = dataset.make_one_shot_iterator()
     # next_element = iterator.get_next()
 

@@ -6,10 +6,29 @@ import tensorflow as tf
 import cv2
 from glob import glob
 from tqdm import tqdm
+import multiprocessing
+import time
 
-class ImageLoader:
+
+class Processor:
     def __init__(self, img_size=256):
         self.img_size = img_size
+
+    def __call__(self, path):
+        img_color = cv2.cvtColor(cv2.imread(path, cv2.IMREAD_COLOR),
+                                 cv2.COLOR_BGR2Lab)
+        img_color = cv2.resize(img_color, (self.img_size, self.img_size))
+        img_bw = np.zeros((self.img_size, self.img_size))
+        for i in range(0, self.img_size):
+            for j in range(0, self.img_size):
+                img_bw[i][j] = img_color[i][j][0]
+        return img_bw, img_color
+
+
+class ImageLoader:
+    def __init__(self, img_size=256, img_format='jpeg'):
+        self.img_size = img_size
+        self.img_format = img_format
 
     def load_img(self, path):
         img_color = cv2.cvtColor(cv2.imread(path, cv2.IMREAD_COLOR),
@@ -24,20 +43,30 @@ class ImageLoader:
                 # img_bw[i][j][2] = 0
         return img_bw, img_color
 
-    def load_folder(self, folder_path, image_format='jpeg'):
+    def load_folder(self, folder_path, mp=False):
         examples = []
         labels = []
         print("Loading files from folder...")
-        for filename in tqdm(glob(folder_path + '/*.' + image_format)):
-            img_bw, img_color = self.load_img(filename)
-            examples.append(img_bw)
-            labels.append(img_color)
-        return np.array(examples), np.array(labels)
+        start = time.time()
+        files = glob(folder_path + '/*.' + self.img_format)
+        if not mp:
+            for filename in tqdm(files):
+                img_bw, img_color = self.load_img(filename)
+                examples.append(img_bw)
+                labels.append(img_color)
+            print("Images loaded. Time elapsed: ", time.time() - start)
+            return np.array(examples), np.array(labels)
+        else:
+            proc = Processor()
+            pool = multiprocessing.Pool()
+            result = pool.map(proc, files)
+            print("Images loaded. Time elapsed: ", time.time() - start)
+            return np.array([i[0] for i in result]), np.array([i[1] for i in result])
 
-    def create_dataset(self, folder_path, image_format='jpeg'):
+    def create_dataset(self, folder_path, mp=False):
         # dataset will be a sequence of tf.Tensor couples
         # (img_bw, img_color)   where the color image is the ground truth
-        return tf.data.Dataset.from_tensor_slices(self.load_folder(folder_path, image_format))
+        return tf.data.Dataset.from_tensor_slices(self.load_folder(folder_path, mp))
 
 
 def main():
