@@ -11,7 +11,7 @@ import time
 
 
 class Processor:
-    def __init__(self, img_size=256):
+    def __init__(self, img_size):
         self.img_size = img_size
 
     def __call__(self, path):
@@ -26,7 +26,7 @@ class Processor:
 
 
 class ImageLoader:
-    def __init__(self, img_size=256, img_format='jpeg'):
+    def __init__(self, img_size, img_format='jpeg'):
         self.img_size = img_size
         self.img_format = img_format
 
@@ -57,7 +57,7 @@ class ImageLoader:
             print("Images loaded. Time elapsed: ", time.time() - start)
             return np.array(examples), np.array(labels)
         else:
-            proc = Processor()
+            proc = Processor(self.img_size)
             pool = multiprocessing.Pool()
             result = pool.map(proc, files)
             print("Images loaded. Time elapsed: ", time.time() - start)
