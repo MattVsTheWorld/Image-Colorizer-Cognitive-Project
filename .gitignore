@@ -2,5 +2,5 @@
 imagenet/
 venv/
 .idea/
-.jpg/
+**/*.jpg
 src/__pycache__/
