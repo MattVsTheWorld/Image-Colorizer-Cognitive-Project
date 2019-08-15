@@ -30,6 +30,7 @@ def convolution(inputs, num_channels, filter_size, num_filters):
     layer = tf.nn.tanh(layer)  # activation function
     return layer
 
+
 # pooling function
 def maxpool(inputs, kernel, stride):
     layer = tf.nn.max_pool(value=inputs, ksize=[1, kernel, kernel, 1],
@@ -44,11 +45,16 @@ def upsampling(inputs):
     return layer
 
 
+# function to take the selected batch of given size from input
+def get_batch(elements, size, index):
+    return elements[slice(index, index + size)]
+
 def main():
 
     mydir = os.pardir + '/test_imgs/bird'
     images = [files for files in os.listdir(mydir)]
     N = len(images)  # number of samples
+    batch_size = 32  # number of images per batch
     data = np.zeros([N, 256, 256, 3])
     # resize to 256 x 256
     for count in range(N):
@@ -105,13 +111,19 @@ def main():
     optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
     session.run(tf.global_variables_initializer())
 
-    num_epochs = 100
+    num_epochs = 5
 
     # training
+    total_batch = int(N / batch_size)
     for i in range(num_epochs):
         session.run(optimizer, feed_dict={x: xt, ytrue: yt})
-        lossvalue = session.run(cost, feed_dict={x: xt, ytrue: yt})
-        print("epoch: " + str(i) + " loss: " + str(lossvalue))
+        avg_loss = 0
+        for j in range(total_batch):
+            batch_x = get_batch(xt, batch_size, j)
+            batch_y = get_batch(yt, batch_size, j)
+            loss_value = session.run(cost, feed_dict={x: xt, ytrue: yt})
+            avg_loss += loss_value / total_batch
+        print("epoch: " + str(i) + " loss: " + str(avg_loss))
 
     output = session.run(conv13, feed_dict={x: xt[0].reshape([1, 256, 256, 1])}) * 128
     image = np.zeros([256, 256, 3])
@@ -121,7 +133,6 @@ def main():
     io.imsave("test.jpg", image)
     cv2.imshow('lul', image)
     cv2.waitKey()
-
 
 if __name__ == '__main__':
     main()
