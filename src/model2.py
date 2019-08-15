@@ -8,6 +8,8 @@ import os
 import cv2
 import skimage.color as color
 import skimage.io as io
+import matplotlib.pyplot as plt
+
 
 
 # function to obtain the set of weights from a shape
@@ -53,28 +55,35 @@ def main():
 
     mydir = os.pardir + '/test_imgs/bird'
     images = [files for files in os.listdir(mydir)]
+    image_size = 256
     N = len(images)  # number of samples
     batch_size = 32  # number of images per batch
-    data = np.zeros([N, 256, 256, 3])
-    # resize to 256 x 256
+    data = np.zeros([N, image_size, image_size, 3])
+    # resize to image_size x image_size
     for count in range(N):
-        img = cv2.resize(io.imread(mydir + '/' + images[count]), (256, 256))
+        img = cv2.resize(io.imread(mydir + '/' + images[count]), (image_size, image_size))
+        if count == 1:
+            io.imshow(img)
+            plt.show()
         data[count, :, :, :] = img
     num_train = N
 
+    # image = np.zeros([image_size, image_size, 3])
+    # image = data[0]
+
     # normalization
-    Xtrain = color.rgb2lab(data[:num_train] * 1.0 / 255)
+    Xtrain = color.rgb2lab(data[:num_train] * 1.0 / (image_size - 1))
     xt = Xtrain[:, :, :, 0]
     yt = Xtrain[:, :, :, 1:]
-    yt = yt / 128
-    xt = xt.reshape(num_train, 256, 256, 1)
-    yt = yt.reshape(num_train, 256, 256, 2)
+    yt = yt / image_size / 2
+    xt = xt.reshape(num_train, image_size, image_size, 1)
+    yt = yt.reshape(num_train, image_size, image_size, 2)
 
     session = tf.compat.v1.Session()
 
     # placeholders for samples and ground truth values
-    x = tf.compat.v1.placeholder(tf.float32, shape=[None, 256, 256, 1], name='x')
-    ytrue = tf.compat.v1.placeholder(tf.float32, shape=[None, 256, 256, 2], name='ytrue')
+    x = tf.compat.v1.placeholder(tf.float32, shape=[None, image_size, image_size, 1], name='x')
+    ytrue = tf.compat.v1.placeholder(tf.float32, shape=[None, image_size, image_size, 2], name='ytrue')
 
     # layers
     conv1 = convolution(x, 1, 3, 3)
@@ -125,14 +134,16 @@ def main():
             avg_loss += loss_value / total_batch
         print("epoch: " + str(i) + " loss: " + str(avg_loss))
 
-    output = session.run(conv13, feed_dict={x: xt[0].reshape([1, 256, 256, 1])}) * 128
-    image = np.zeros([256, 256, 3])
-    image[:, :, 0] = xt[0][:, :, 0]
+    output = session.run(conv13, feed_dict={x: xt[0].reshape([1, image_size, image_size, 1])}) * (image_size/2)
+    image = np.zeros([image_size, image_size, 3])
+    # reconstruct the image with the first column from L value and the second and third from the net output
+    image[:, :, 0] = xt[1][:, :, 0]
     image[:, :, 1:] = output[0]
     image = color.lab2rgb(image)
-    io.imsave("test.jpg", image)
-    cv2.imshow('lul', image)
-    cv2.waitKey()
+    # io.imsave("test.jpg", image)
+    print(image)
+    io.imshow(image)
+    plt.show()
 
 if __name__ == '__main__':
     main()
