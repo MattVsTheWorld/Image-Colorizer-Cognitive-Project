@@ -9,7 +9,7 @@ import cv2
 import skimage.color as color
 import skimage.io as io
 import matplotlib.pyplot as plt
-
+from src.preprocessing import ImageLoader
 
 
 # function to obtain the set of weights from a shape
@@ -55,24 +55,25 @@ def main():
 
     mydir = os.pardir + '/test_imgs/bird'
     images = [files for files in os.listdir(mydir)]
-    image_size = 256
+    image_size = 64
+    img_format = 'jpeg'
     N = len(images)  # number of samples
     batch_size = 32  # number of images per batch
     data = np.zeros([N, image_size, image_size, 3])
     # resize to image_size x image_size
+    '''
     for count in range(N):
         img = cv2.resize(io.imread(mydir + '/' + images[count]), (image_size, image_size))
-        if count == 1:
+        if count == 2:
             io.imshow(img)
             plt.show()
         data[count, :, :, :] = img
+    '''
     num_train = N
-
-    # image = np.zeros([image_size, image_size, 3])
-    # image = data[0]
-
+    loader = ImageLoader(image_size, img_format)
+    _, data = loader.load_folder(os.pardir + '/test_imgs/bird', mp=True)
     # normalization
-    Xtrain = color.rgb2lab(data[:num_train] * 1.0 / (image_size - 1))
+    Xtrain = data[:num_train] * 1.0 / (image_size - 1)
     xt = Xtrain[:, :, :, 0]
     yt = Xtrain[:, :, :, 1:]
     yt = yt / image_size / 2
@@ -112,15 +113,15 @@ def main():
     upsample6 = upsampling(conv12)
     conv13 = convolution(upsample6, 8, 3, 2)
 
-    # loss funtion
+    # loss function
     loss = tf.compat.v1.losses.mean_squared_error(labels=ytrue, predictions=conv13)
     # optimization metric
     cost = tf.reduce_mean(loss)
     # optimizer
     optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
-    session.run(tf.global_variables_initializer())
+    session.run(tf.compat.v1.global_variables_initializer())
 
-    num_epochs = 5
+    num_epochs = 1
 
     # training
     total_batch = int(N / batch_size)
@@ -137,7 +138,7 @@ def main():
     output = session.run(conv13, feed_dict={x: xt[0].reshape([1, image_size, image_size, 1])}) * (image_size/2)
     image = np.zeros([image_size, image_size, 3])
     # reconstruct the image with the first column from L value and the second and third from the net output
-    image[:, :, 0] = xt[1][:, :, 0]
+    image[:, :, 0] = xt[2][:, :, 0]
     image[:, :, 1:] = output[0]
     image = color.lab2rgb(image)
     # io.imsave("test.jpg", image)
