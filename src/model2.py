@@ -121,7 +121,7 @@ def main():
     optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
     session.run(tf.compat.v1.global_variables_initializer())
 
-    num_epochs = 1
+    num_epochs = 25
 
     # training
     total_batch = int(N / batch_size)
@@ -145,6 +145,7 @@ def main():
     print(image)
     io.imshow(image)
     plt.show()
+
 
 if __name__ == '__main__':
     main()

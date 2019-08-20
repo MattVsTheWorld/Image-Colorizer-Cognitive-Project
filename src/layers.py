@@ -19,7 +19,6 @@ class CustomConv(keras.layers.Layer):
     def call(self, inputs, **kwargs):
         # TODO: implement
         return 0
-        
 
 
 def main():

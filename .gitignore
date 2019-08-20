@@ -4,3 +4,4 @@ venv/
 .idea/
 **/*.jpg
 src/__pycache__/
+/test_imgs/bird/
