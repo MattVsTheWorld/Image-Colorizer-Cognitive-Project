@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import cv2
 import os
+from tqdm import tqdm
 from skimage import color
 
 matplotlib.interactive(True)
@@ -12,8 +13,8 @@ matplotlib.interactive(True)
 color_map = np.zeros((256, 256))
 mydir = os.pardir + '/test_imgs/bird'
 
-for name in os.listdir(mydir):
-    print(name)
+for name in tqdm(os.listdir(mydir)):
+    # print(name)
     img = cv2.cvtColor(cv2.imread(mydir + "/" + name), cv2.COLOR_BGR2RGB)
     img = color.rgb2lab(img)
     for i in range(img.shape[0]):
