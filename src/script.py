@@ -22,85 +22,103 @@ def softmax(z):
     return tf.exp(z) / tf.reduce_sum(tf.exp(z))
 
 
-# Guassian filter definition (There is also the default one but is better to have it written for T R A S P A R E N C Y)
-def gaussian_filter(kernlen=21, nsig=3):
-    """Returns a 2D Gaussian kernel array."""
-
-    interval = (2 * nsig + 1.) / kernlen
-    x = np.linspace(- nsig - interval / 2., nsig + interval / 2., kernlen + 1)
+# Gaussian filter definition (There is also the default one but is better to have it written for T R A S P A R E N C Y)
+def gaussian_filter(kernel_len: int = 21, sigma: int = 3) -> ndarray:
+    """
+    :param kernel_len: gaussian parameter
+    :param sigma: gaussian parameter
+    :return: a 2D Gaussian kernel array
+    """
+    interval = (2 * sigma + 1.) / kernel_len
+    x = np.linspace(- sigma - interval / 2., sigma + interval / 2., kernel_len + 1)
     kern1d = np.diff(stats.norm.cdf(x))
     kernel_raw = np.sqrt(np.outer(kern1d, kern1d))
-    kernel = kernel_raw / kernel_raw.sum()
+    kernel: ndarray(dtype=float, shape=(kernel_len, kernel_len)) = kernel_raw / kernel_raw.sum()
     return kernel
 
 
 # Function to convert the NxNx2 distr. in a soft-encoding distribution NxNxQ
-def lab2distr(image):
+def lab2distr(image: ndarray, map_size: int,
+              eq_map: ndarray(dtype=float, shape=(256, 256)),
+              eq_map_small: ndarray(dtype=float, shape=(32, 32)),
+              c1: ndarray, c2: ndarray, tiles_num: int) -> ndarray:
     # 2D Gaussian parameters
-    kernel = 5
-    sigma = 2
-    g = gaussian_filter(kernel, sigma)
-    res = np.zeros((image.shape[0], image.shape[0], Q))  # as image but q not 2
+    kernel_len: int = 5
+    sigma: int = 2
+    gauss_filter: ndarray(dtype=float, shape=(kernel_len, kernel_len)) = gaussian_filter(kernel_len, sigma)
+    # ndarray of zeros and same shape as image, but it's N x N x tiles_num rather than x 2
+    result: ndarray(dtype=float, shape=image.shape) = np.zeros((image.shape[0], image.shape[0], tiles_num))
 
     for i in range(image.shape[0]):
         for j in range(image.shape[1]):
             # create a temporary matrix with added kernel padding to the sides
-            tmp = np.zeros((EqMapSmall.shape[0] + (kernel // 2) * 2,    # *2???
-                            EqMapSmall.shape[1] + (kernel // 2) * 2))
+            tmp: ndarray = np.zeros((eq_map_small.shape[0] + (kernel_len // 2) * 2,      # *2???  TODO: forse // 2 *2 è per assicurarsi che sia divisibile? forza il rounding
+                                     eq_map_small.shape[1] + (kernel_len // 2) * 2))     # 5 // 2 = 2, 32 + 2*2 = 36
             # Get the a,b values that will be like coordinates
             # and shift the values to fit the matrix (-127 <= a,b <= 128.
+            a: float    # a* of L*a*b*
+            b: float    # b* of L*a*b*
             a, b = image[i, j, :]
-            a = int(a) + map_size // 2  # -1?
-            b = int(b) + map_size // 2
+            a: int = (int(a) + map_size // 2) - 1  # TODO: io il -1 lo metto, mi sembra giusto
+            b: int = (int(b) + map_size // 2) - 1
 
-            colorClass = EqMap[a, b]
+            color_class: float = eq_map[a, b]
             # if non weight is related, error (not 100% sure if needed)
-            if colorClass < 1:
-                print("This is fucked up!")
+            if color_class < 1:
+                print("Error in color_class creation")
 
             # find the relative center coordinates
-            centerX, centerY = np.where(EqMapSmall == colorClass)
-            centerX = centerX[0] + kernel // 2
-            centerY = centerY[0] + kernel // 2
+            center_x_arr: ndarray(dtype=int, shape=(1,))
+            center_y_arr: ndarray(dtype=int, shape=(1,))
+            center_x_arr, center_y_arr = np.where(eq_map_small == color_class)
+            # stores as 1-element arrays
+            center_x: int = center_x_arr[0] + kernel_len // 2
+            center_y: int = center_y_arr[0] + kernel_len // 2
 
             # apply the gaussian filter
-            tmp[centerX - kernel // 2: centerX + kernel // 2 + 1,
-            centerY - kernel // 2: centerY + kernel // 2 + 1] = g
+            tmp[center_x - kernel_len // 2: center_x + kernel_len // 2 + 1,
+                center_y - kernel_len // 2: center_y + kernel_len // 2 + 1] = gauss_filter
             # Remove the borders I added before
-            tmp = tmp[kernel // 2: -1 * (kernel // 2), kernel // 2: -1 * (kernel // 2)]
-            # return tmp
+            tmp = tmp[kernel_len // 2: -1 * (kernel_len // 2), kernel_len // 2: -1 * (kernel_len // 2)]
             # Now I flatten it and take the significant bins.
-            res[i, j, :] = tmp[C1, C2]
-    return res
+            result[i, j, :] = tmp[c1, c2]
+    return result
 
 
 # function to convert from NxNxQ to NxNx3 (original image).
-def distr2lab(bwimage):
-    image = np.zeros((bwimage.shape[0], bwimage.shape[1], 2))
-
+def distr2lab(bwimage: ndarray, win_map: int, map_size: int,
+              eq_map_small: ndarray(dtype=float, shape=(32, 32)),
+              c1: ndarray, c2: ndarray) -> ndarray:
+    # Create an empty matrix for channels a, b
+    image: ndarray = np.zeros((bwimage.shape[0], bwimage.shape[1], 2))
     for i in range(bwimage.shape[0]):
         for j in range(bwimage.shape[1]):
-            res2 = bwimage[i, j, :]
-            # res2=np.exp(np.log(res2)/T)/(np.sum(np.exp(np.log(res2)/T)))   # (suspect, reasonable with high probability, investigate)
-            matrix = np.zeros_like(EqMapSmall)
-            # I put the distribution back to the original colorspace
-            matrix[C1, C2] = res2
+            # Take values at coordinates, throughout Q dimensions //TODO: giusto?
+            result_2: ndarray(dtype=float, shape=(1,)) = bwimage[i, j, :]
+
+            # TODO: mysterious formula
+            # res2=np.exp(np.log(res2)/T)/(np.sum(np.exp(np.log(res2)/T)))
+            # (suspect, reasonable with high probability, investigate)
+
+            matrix: ndarray(dtype=float, shape=(32, 32)) = np.zeros_like(eq_map_small)
+            # Put the distribution back to the original colorspace
+            matrix[c1, c2] = result_2
 
             c1, c2 = np.where(matrix != 0)
-            probs = matrix[matrix != 0]
-            colorX = np.sum(c1 * (probs * 10)) / np.sum(probs * 10)    # *10?
-            colorY = np.sum(c2 * (probs * 10)) / np.sum(probs * 10)
+            probabilities: ndarray = matrix[matrix != 0]
+            color_x: float = np.sum(c1 * (probabilities * 10)) / np.sum(probabilities * 10)    # *10?
+            color_y: float = np.sum(c2 * (probabilities * 10)) / np.sum(probabilities * 10)
 
-            colorX = colorX * WinMap - map_size // 2   # why *WinMap / cause 32*32
-            colorY = colorY * WinMap - map_size // 2
-
-            image[i, j] = [colorX, colorY]
+            color_x = color_x * win_map - map_size // 2   # why *WinMap ? / = cause 32*32
+            color_y = color_y * win_map - map_size // 2
+            # put color_x, color_y at coordinates i, j
+            image[i, j] = [color_x, color_y]
 
     return image
 
 
 # function to map weights to final values (kernel excluded)
-def mapWeights(batch):
+def map_weights(batch):
     res = np.zeros((batch.shape[0], batch.shape[1], batch.shape[2]))
     for i in range(batch.shape[0]):
         for j in range(batch.shape[1]):
@@ -198,7 +216,7 @@ with tf.Session() as sess:
                 colors_batch[index, :, :, :] = np.reshape(piece[8:-8, 8:-8, 1:], (1, 16, 16, 2))
             # print(colors_batch)
             [_, c] = sess.run([train_step, cost],
-                              feed_dict={X: input_batch, Y: labels_batch, ZW: mapWeights(colors_batch)})
+                              feed_dict={X: input_batch, Y: labels_batch, ZW: map_weights(colors_batch)})
             print(c)
 
     saver.save(sess, "test-model-good2")
@@ -263,7 +281,7 @@ def populate_maps(map_size, win_map, distr_map, eq_map, eq_map_small, p_tilde):
 
 def main():
     print("Script started...")
-    # ---- Setup ----
+    # ---- (1) Setup ----
     # Clears the default graph stack and resets the global default graph.
     tf.compat.v1.reset_default_graph()
     eps: float = 10e-9
@@ -282,7 +300,7 @@ def main():
     T: float = 0.01
     # ---- ///// ----
 
-    # ---- Set up maps ----
+    # ---- (2) Set up maps ----
     # Number of tiles
     tiles_num: int = 0
     # Number of discrete regions of LAB colorspace
@@ -290,6 +308,7 @@ def main():
                                                              eq_map, eq_map_small, p_tilde)
     # ---- //////// ----
 
+    # ---- (3) Set up weights for colors ----
     # Coordinates where the significant bins can be found (c1: array of row indices, c2: array of column indices)
     c1: ndarray     # righe
     c2: ndarray     # colonne
@@ -299,15 +318,16 @@ def main():
     p_tilde: ndarray = p_tilde[c1, c2]
     # Paper formula coefficient (suggested value)
     lambda_val: float = 0.5
-    # operazione su p_tilde; stessa forma
+    # Operazione su p_tilde; stessa forma
     weights: ndarray(dtype=float, shape=(32, 32)) = 1 / ((1 - lambda_val) * p_tilde + (lambda_val / tiles_num))
-    # Normalized such that np.sum(Weights*P_tilde)==1
+    # Normalize such that np.sum(Weights*P_tilde)==1
     weights = weights / np.sum(p_tilde * weights)
 
     # Create a matrix of the usual 32x32 size
     final_weights: ndarray(dtype=float, shape=(32, 32)) = np.zeros_like(eq_map_small)
-    # flatten it
-    final_weights[c1, c2]: ndarray = weights
+    # put the weights at the corresponding coordinates
+    final_weights[c1, c2]: ndarray(dtype=float, shape=(32, 32)) = weights
+    # ---- //////////////////// ----
 
 
 if __name__ == '__main__':
