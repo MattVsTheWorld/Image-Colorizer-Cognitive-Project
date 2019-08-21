@@ -3,7 +3,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import numpy as np
 from numpy.core._multiarray_umath import ndarray
-from typing import Tuple
+from typing import List, Tuple
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.interactive(True)
@@ -93,7 +93,7 @@ def distr2lab(bwimage: ndarray, win_map: int, map_size: int,
     image: ndarray = np.zeros((bwimage.shape[0], bwimage.shape[1], 2))
     for i in range(bwimage.shape[0]):
         for j in range(bwimage.shape[1]):
-            # Take values at coordinates, throughout Q dimensions //TODO: giusto?
+            # Take values at coordinates, throughout tiles_num dimensions //TODO: giusto?
             result_2: ndarray(dtype=float, shape=(1,)) = bwimage[i, j, :]
 
             # TODO: mysterious formula
@@ -118,25 +118,28 @@ def distr2lab(bwimage: ndarray, win_map: int, map_size: int,
 
 
 # function to map weights to final values (kernel excluded)
-def map_weights(batch):
-    res = np.zeros((batch.shape[0], batch.shape[1], batch.shape[2]))
+# TODO: some types missing
+def map_weights(batch, win_map: int,
+                final_weights: ndarray(dtype=float, shape=(32, 32))) -> ndarray:
+    result: ndarray = np.zeros((batch.shape[0], batch.shape[1], batch.shape[2]))
     for i in range(batch.shape[0]):
         for j in range(batch.shape[1]):
             for k in range(batch.shape[2]):
                 # traspone la tabella
-                ind1 = (int(batch[i, j, k, 0]) + 127) // WinMap
-                ind2 = (int(batch[i, j, k, 1]) + 127) // WinMap
-                res[i, j, k] = FinalWeights[ind1, ind2]
+                ind1: int = (int(batch[i, j, k, 0]) + 127) // win_map
+                ind2: int = (int(batch[i, j, k, 1]) + 127) // win_map
+                result[i, j, k] = final_weights[ind1, ind2]
 
-    return res
+    return result
 
 
-def getModel():
+# TODO: finish typing
+def getModel(tiles_num: int, eps: float = 10e-9):
     X = tf.placeholder("float", [None, 32, 32, 1])
-    Y = tf.placeholder("float", [None, 16, 16, Q])
+    Y = tf.placeholder("float", [None, 16, 16, tiles_num])
     ZW = tf.placeholder("float", [None, 16, 16])
 
-    step = Q // 8
+    step = tiles_num // 8
 
     with tf.variable_scope("conv1") as scope:
         W = tf.get_variable("W", shape=[3, 3, 1, step],
@@ -156,9 +159,9 @@ def getModel():
             l_act = tf.nn.relu(l)
 
     with tf.variable_scope("conv8") as scope:
-        W = tf.get_variable("W", shape=[3, 3, step * 7, Q],
+        W = tf.get_variable("W", shape=[3, 3, step * 7, tiles_num],
                             initializer=tf.contrib.layers.xavier_initializer())
-        b = tf.get_variable("b", initializer=tf.zeros([Q]))
+        b = tf.get_variable("b", initializer=tf.zeros([tiles_num]))
         output = tf.nn.bias_add(
             tf.nn.conv2d(l, W, strides=[1, 1, 1, 1], padding="VALID"), b)
     # l_act = tf.nn.softmax(l)
@@ -181,74 +184,83 @@ def getModel():
     return (X, Y, ZW), train_step, cost, pred
 
 
-(X, Y, ZW), train_step, cost, pred = getModel()
+# TODO: finish typing
+def run(tiles_num: int, win_map: int, map_size: int,
+        eq_map: ndarray(dtype=float, shape=(256, 256)),
+        eq_map_small: ndarray(dtype=float, shape=(32, 32)),
+        c1: ndarray, c2: ndarray,
+        num_epochs: int = 10, batch_size: int = 32):
+    # X, Y, ZW are tf.placeholders
+    (X, Y, ZW), train_step, cost, pred = getModel(tiles_num)
 
-saver = tf.train.Saver()
+    saver = tf.train.Saver()
 
-with tf.Session() as sess:
-    sess.run(tf.global_variables_initializer())
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
 
-    # Training
-    epochs = 10
-    b_size = 32
-    images = []
-    for filename in tqdm(os.listdir(os.pardir + "/test_imgs/bird")):
-        im = cv2.cvtColor(cv2.imread(os.pardir + "/test_imgs/bird/" + filename), cv2.COLOR_BGR2RGB)
-        im_lab = color.rgb2lab(cv2.resize(im, (256, 256)))
-        images.append(im_lab)
+        # Training
+        images: List[ndarray] = []
+        for filename in tqdm(os.listdir(os.pardir + "/test_imgs/bird")):
+            im: ndarray = cv2.cvtColor(cv2.imread(os.pardir + "/test_imgs/bird/" + filename), cv2.COLOR_BGR2RGB)
+            im_lab: ndarray(dtype=float, shape=(256, 256, 3)) = color.rgb2lab(cv2.resize(im, (256, 256)))
+            images.append(im_lab)
 
-    iters = [(x, y, z) for z in range(0, 256, 32) for y in range(0, 256, 32) for x in range(len(images))]
+        iters: List[Tuple[int, int, int]] = [(x, y, z) for z in range(0, 256, 32)
+                                             for y in range(0, 256, 32)
+                                             for x in range(len(images))]
 
-    for ep in range(epochs):
-        random.shuffle(iters)
-        cc = 0
-        print("Epoch: {0}.".format(ep))
-        for batch in range(0, len(images), b_size):
-            cc += 1
-            input_batch = np.zeros((b_size, 32, 32, 1))
-            labels_batch = np.zeros((b_size, 16, 16, Q))
-            colors_batch = np.zeros((b_size, 16, 16, 2))
-            for index in range(b_size):
-                imID, i, j = iters[index]
-                piece = images[imID][i:i + 32, j:j + 32, :]
-                input_batch[index, :, :, 0] = piece[:, :, 0]
-                labels_batch[index, :, :, :] = np.reshape(lab2distr(piece[8:-8, 8:-8, 1:]), (1, 16, 16, Q))
-                colors_batch[index, :, :, :] = np.reshape(piece[8:-8, 8:-8, 1:], (1, 16, 16, 2))
-            # print(colors_batch)
-            [_, c] = sess.run([train_step, cost],
-                              feed_dict={X: input_batch, Y: labels_batch, ZW: map_weights(colors_batch)})
-            print(c)
+        for ep in range(num_epochs):
+            random.shuffle(iters)
+            cc = 0
+            print("Epoch: {0}.".format(ep))
+            for batch in range(0, len(images), batch_size):
+                cc += 1
+                input_batch = np.zeros((batch_size, 32, 32, 1))
+                labels_batch = np.zeros((batch_size, 16, 16, tiles_num))
+                colors_batch = np.zeros((batch_size, 16, 16, 2))
+                for index in range(batch_size):
+                    imID, i, j = iters[index]
+                    piece = images[imID][i:i + 32, j:j + 32, :]
+                    input_batch[index, :, :, 0] = piece[:, :, 0]
+                    labels_batch[index, :, :, :] = np.reshape(lab2distr(piece[8:-8, 8:-8, 1:], map_size,
+                                                                        eq_map, eq_map_small, c1, c2,
+                                                                        tiles_num), (1, 16, 16, tiles_num))
+                    colors_batch[index, :, :, :] = np.reshape(piece[8:-8, 8:-8, 1:], (1, 16, 16, 2))
+                # print(colors_batch)
+                [_, c] = sess.run([train_step, cost],
+                                  feed_dict={X: input_batch, Y: labels_batch, ZW: map_weights(colors_batch)})
+                print(c)
 
-    saver.save(sess, "test-model-good2")
-    # Testing
-    for kk in range(10):
-        ind = int(random.uniform(0, len(images)))
-        res = np.zeros((256, 256, 3))
-        res[:, :, 0] = images[ind][:, :, 0]
-        lala = []
-        lolo = []
-        for i in range(8, 256 - 8, 16):
-            for j in range(8, 256 - 8, 16):
-                inp = np.reshape(images[ind][i - 8:i + 24, j - 8:j + 24, 0], (1, 32, 32, 1))
+        saver.save(sess, "test-model-good2")
+        # Testing
+        for kk in range(10):
+            ind = int(random.uniform(0, len(images)))
+            res = np.zeros((256, 256, 3))
+            res[:, :, 0] = images[ind][:, :, 0]
+            lala = []
+            lolo = []
+            for i in range(8, 256 - 8, 16):
+                for j in range(8, 256 - 8, 16):
+                    inp = np.reshape(images[ind][i - 8:i + 24, j - 8:j + 24, 0], (1, 32, 32, 1))
 
-                [p] = sess.run([pred], feed_dict={X: inp})
-                p = np.reshape(p, (16, 16, Q))
-                lala.append(p)
-                lolo.append(inp)
-                dp = distr2lab(p)
+                    [p] = sess.run([pred], feed_dict={X: inp})
+                    p = np.reshape(p, (16, 16, tiles_num))
+                    lala.append(p)
+                    lolo.append(inp)
+                    dp = distr2lab(p)
 
-                res[i:i + 16, j:j + 16, 1:] = dp
-            # print(dp.shape)
+                    res[i:i + 16, j:j + 16, 1:] = dp
+                # print(dp.shape)
 
-        res_converted = color.lab2rgb(res)
-        res2 = np.zeros_like(res)
-        res2[:, :, 1:] = res[:, :, 1:]
-        res2[:, :, 0] = 100
-        res2 = color.lab2rgb(res2)
+            res_converted = color.lab2rgb(res)
+            res2 = np.zeros_like(res)
+            res2[:, :, 1:] = res[:, :, 1:]
+            res2[:, :, 0] = 100
+            res2 = color.lab2rgb(res2)
 
-        plt.figure()
-        plt.imshow(res_converted)
-        plt.show()
+            plt.figure()
+            plt.imshow(res_converted)
+            plt.show()
 
 
 def populate_maps(map_size, win_map, distr_map, eq_map, eq_map_small, p_tilde):
@@ -284,7 +296,6 @@ def main():
     # ---- (1) Setup ----
     # Clears the default graph stack and resets the global default graph.
     tf.compat.v1.reset_default_graph()
-    eps: float = 10e-9
     # Distributed map showing where most of the color values are found, loaded from file
     distr_map: ndarray(dtype=float, shape=(256, 256)) = np.load("color_distribution.npy")  # 256x256
     map_size: int = distr_map.shape[0]
