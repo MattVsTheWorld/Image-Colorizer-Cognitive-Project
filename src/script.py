@@ -189,6 +189,7 @@ def run(tiles_num: int, win_map: int, map_size: int,
         eq_map: ndarray(dtype=float, shape=(256, 256)),
         eq_map_small: ndarray(dtype=float, shape=(32, 32)),
         c1: ndarray, c2: ndarray,
+        final_weights: ndarray(dtype=float, shape=(32, 32)),
         num_epochs: int = 10, batch_size: int = 32):
     # X, Y, ZW are tf.placeholders
     (X, Y, ZW), train_step, cost, pred = getModel(tiles_num)
@@ -228,7 +229,7 @@ def run(tiles_num: int, win_map: int, map_size: int,
                     colors_batch[index, :, :, :] = np.reshape(piece[8:-8, 8:-8, 1:], (1, 16, 16, 2))
                 # print(colors_batch)
                 [_, c] = sess.run([train_step, cost],
-                                  feed_dict={X: input_batch, Y: labels_batch, ZW: map_weights(colors_batch)})
+                                  feed_dict={X: input_batch, Y: labels_batch, ZW: map_weights(colors_batch, win_map, final_weights)})
                 print(c)
 
         saver.save(sess, "test-model-good2")
@@ -247,7 +248,7 @@ def run(tiles_num: int, win_map: int, map_size: int,
                     p = np.reshape(p, (16, 16, tiles_num))
                     lala.append(p)
                     lolo.append(inp)
-                    dp = distr2lab(p)
+                    dp = distr2lab(p, win_map, map_size, eq_map_small, c1, c2)
 
                     res[i:i + 16, j:j + 16, 1:] = dp
                 # print(dp.shape)
@@ -313,7 +314,7 @@ def main():
 
     # ---- (2) Set up maps ----
     # Number of tiles
-    tiles_num: int = 0
+    tiles_num: int
     # Number of discrete regions of LAB colorspace
     tiles_num, eq_map, eq_map_small, p_tilde = populate_maps(map_size, win_map, distr_map,
                                                              eq_map, eq_map_small, p_tilde)
@@ -339,6 +340,14 @@ def main():
     # put the weights at the corresponding coordinates
     final_weights[c1, c2]: ndarray(dtype=float, shape=(32, 32)) = weights
     # ---- //////////////////// ----
+
+    # ---- (4) Run ----
+    num_epochs: int = 10
+    batch_size: int = 32
+
+    run(tiles_num, win_map, map_size, eq_map,
+        eq_map_small, c1, c2, final_weights, num_epochs, batch_size)
+    # ---- ///// ----
 
 
 if __name__ == '__main__':
