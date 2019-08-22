@@ -2,14 +2,12 @@ import warnings
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import tensorflow as tf
-from tensorflow import keras
 import numpy as np
 import os
-import cv2
 import skimage.color as color
 import skimage.io as io
 import matplotlib.pyplot as plt
-from src.preprocessing import ImageLoader
+from src.Old.preprocessing import ImageLoader
 
 
 # function to obtain the set of weights from a shape
