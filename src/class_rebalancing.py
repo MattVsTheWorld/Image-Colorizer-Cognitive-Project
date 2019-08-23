@@ -43,7 +43,7 @@ def compute_color_prior(X_ab: ndarray):
     Calculate prior color probability of dataset
     :param X_ab: Sample of images
     """
-    q_ab: ndarray(dtype=int, shape=(313, 2)) = np.load(data_dir + "/lab_gamut.npy")
+    q_ab: ndarray(dtype=int, shape=(313, 2)) = np.load(os.path.join(data_dir, "lab_gamut.npy"))
     X_a: ndarray = np.ravel(X_ab[:, :, :, 0])
     X_b: ndarray = np.ravel(X_ab[:, :, :, 1])
     X_ab: ndarray = np.vstack((X_a, X_b)).T
@@ -70,7 +70,7 @@ def compute_color_prior(X_ab: ndarray):
     prior_prob = prior_prob / (1.0 * np.sum(prior_prob))
 
     # Save in data
-    np.save(data_dir + "/prior_probability.npy", prior_prob)
+    np.save(data_dir + "prior_probability.npy", prior_prob)
 
 
 def smooth_color_prior(sigma: int = 5):
@@ -78,7 +78,8 @@ def smooth_color_prior(sigma: int = 5):
     Smooth color probability with a gaussian window
     :param sigma: gaussian parameter
     """
-    prior_prob: ndarray = np.load(data_dir, "prior_probability.npy")
+
+    prior_prob: ndarray = np.load(os.path.join(data_dir, "prior_probability.npy"))
     # Epsilon piccola a p i a c e r e (avoids 0 values/ NaN)
     prior_prob += 1E-3 * np.min(prior_prob)
     # Renormalize
@@ -97,7 +98,7 @@ def smooth_color_prior(sigma: int = 5):
     prior_prob_smoothed: ndarray = prior_prob_smoothed / np.sum(prior_prob_smoothed)
 
     # Save
-    np.save(data_dir + "/prior_prob_smoothed.npy", prior_prob_smoothed)
+    np.save(os.path.join(data_dir, "prior_prob_smoothed.npy"), prior_prob_smoothed)
 
 
 def compute_prior_factor(gamma: float = 0.5, alpha: int = 1):
@@ -107,7 +108,7 @@ def compute_prior_factor(gamma: float = 0.5, alpha: int = 1):
     :param alpha:
     :return:
     """
-    prior_prob_smoothed = np.load(data_dir + "prior_prob_smoothed.npy")
+    prior_prob_smoothed = np.load(os.path.join(data_dir, "prior_prob_smoothed.npy"))
 
     u: ndarray = np.ones_like(prior_prob_smoothed)
     u: ndarray = u / np.sum(1.0 * u)
@@ -118,7 +119,7 @@ def compute_prior_factor(gamma: float = 0.5, alpha: int = 1):
     # renormalize
     prior_factor = prior_factor / (np.sum(prior_factor * prior_prob_smoothed))
 
-    np.save(data_dir + "/prior_factor.npy", prior_factor)
+    np.save(os.path.join(data_dir, "prior_factor.npy"), prior_factor)
 
 
 def main():
