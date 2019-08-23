@@ -2,9 +2,7 @@ import argparse
 import os
 
 import keras
-import tensorflow as tf
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
-from keras.utils import multi_gpu_model
 
 from src.config import patience, epochs, batch_size
 from src.data_generator import train_gen, valid_gen
@@ -26,16 +24,6 @@ def main():
     model_checkpoint = ModelCheckpoint(model_names, monitor='val_loss', verbose=1, save_best_only=True)
     early_stop = EarlyStopping('val_loss', patience=patience)
     reduce_lr = ReduceLROnPlateau('val_loss', factor=0.1, patience=int(patience / 4), verbose=1)
-
-    # Custom callback
-    class MyCbk(keras.callbacks.Callback):
-        def __init__(self, model):
-            keras.callbacks.Callback.__init__(self)
-            self.model_to_save = model
-
-        def on_epoch_end(self, epoch, logs=None):
-            fmt = checkpoint_models_path + 'model.%02d-%.4f.hdf5'
-            self.model_to_save.save(fmt % (epoch, logs['val_loss']))
 
     new_model = build_model()
     if pretrained_path is not None:
