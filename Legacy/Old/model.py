@@ -5,7 +5,7 @@ from tensorflow import keras
 import numpy as np
 import os
 import cv2
-from src.Old.preprocessing import ImageLoader
+from Legacy.Old.preprocessing import ImageLoader
 
 
 def loss_l3(found, truth):

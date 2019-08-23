@@ -7,7 +7,7 @@ import os
 import skimage.color as color
 import skimage.io as io
 import matplotlib.pyplot as plt
-from src.Old.preprocessing import ImageLoader
+from Legacy.Old.preprocessing import ImageLoader
 
 
 # function to obtain the set of weights from a shape
