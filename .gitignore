@@ -3,5 +3,11 @@ imagenet/
 venv/
 .idea/
 **/*.jpg
+**/*.jpeg
+**/*.png
 src/__pycache__/
+src/logs/
+src/models/
+src/data/
+src/image_names/
 /test_imgs/bird/

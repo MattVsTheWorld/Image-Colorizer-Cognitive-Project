@@ -1,15 +1,20 @@
+import os
+import sys
+stderr = sys.stderr
+sys.stderr = open(os.devnull, 'w')
+sys.stderr = stderr
 import keras.backend as K
 import tensorflow as tf
 from keras.layers import Input, Conv2D, BatchNormalization, UpSampling2D
 from keras.models import Model
 from keras.regularizers import l2
-# from keras.utils import multi_gpu_model
 from keras.utils import plot_model
 
 from src.config import img_rows, img_cols, num_colors, kernel_size
 
 
 def build_model():
+    tf.logging.set_verbosity(tf.logging.ERROR)
     # Initialize l2 regulator from keras
     l2_reg = l2(1e-3)
 
@@ -112,11 +117,12 @@ def build_model():
     # Spacial resolution of output = 28
     x = BatchNormalization()(x)
     # ----------------------------------------------------------------------------
+    # Upsample before convolution
     x = UpSampling2D(size=(2, 2))(x)
     # Spacial resolution of output = 56
     x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv8_1', kernel_initializer="he_normal",
-               kernel_regularizer=l2_reg, strides=(.5, .5))(x)
+               kernel_regularizer=l2_reg, strides=(1, 1))(x)
     x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv8_2', kernel_initializer="he_normal",
                kernel_regularizer=l2_reg, strides=(1, 1))(x)

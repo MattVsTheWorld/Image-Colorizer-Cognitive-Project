@@ -1,7 +1,10 @@
 import argparse
 import os
-
+import sys
+stderr = sys.stderr
+sys.stderr = open(os.devnull, 'w')
 import keras
+sys.stderr = stderr
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 
 from src.config import patience, epochs, batch_size
@@ -10,6 +13,7 @@ from src.model import build_model
 
 
 def main():
+
     # Parse arguments
     ap = argparse.ArgumentParser()
     ap.add_argument("-p", "--pretrained", help="path to save pretrained model files")

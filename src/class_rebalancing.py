@@ -1,12 +1,9 @@
 import os
 from numpy.core._multiarray_umath import ndarray
-from typing import List, Tuple
+from typing import List
 import cv2
-import matplotlib.gridspec as gridspec
-import matplotlib.pylab as plt
 import numpy as np
 import sklearn.neighbors as nn
-from matplotlib.colors import LogNorm
 from scipy.interpolate import interp1d
 from scipy.signal import gaussian, convolve
 from src.config import data_dir
