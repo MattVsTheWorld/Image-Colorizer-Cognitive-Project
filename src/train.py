@@ -7,9 +7,34 @@ import keras
 sys.stderr = stderr
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 
-from src.config import patience, epochs, batch_size
+from numpy.core._multiarray_umath import ndarray
+from src.config import patience, epochs, batch_size, learning_rate
 from src.data_generator import train_gen, valid_gen
 from src.model import build_model
+
+# TODO: TEST ---------------------------------------
+import numpy as np
+import tensorflow as tf
+
+
+def categorical_crossentropy_color(y_true, y_pred):
+    q = 313
+    y_true = keras.backend.reshape(y_true, (-1, q))
+    y_pred = keras.backend.reshape(y_pred, (-1, q))
+
+    idx_max = keras.backend.argmax(y_true, axis=1)
+    prior_factor = np.load(os.path.join('data/', "prior_factor.npy")).astype(np.float32)
+    weights = keras.backend.gather(prior_factor, idx_max)
+    weights = keras.backend.reshape(weights, (-1, 1))
+
+    # multiply y_true by weights
+    y_true = y_true * weights
+
+    cross_ent = keras.backend.categorical_crossentropy(y_pred, y_true)
+    cross_ent = keras.backend.mean(cross_ent, axis=-1)
+
+    return cross_ent
+# TODO: TEST ---------------------------------------
 
 
 def main():
@@ -37,6 +62,8 @@ def main():
     # Optimizer
     sgd = keras.optimizers.SGD(lr=0.001, momentum=0.9, nesterov=True, clipnorm=5.)
     new_model.compile(optimizer=sgd, loss='categorical_crossentropy')
+    # adam = keras.optimizers.Adam(lr=learning_rate, beta_1=0.9, beta_2=0.99, epsilon=1e-08)
+    # new_model.compile(optimizer=adam, loss=categorical_crossentropy_color)
     # Print model stats
     print(new_model.summary())
 

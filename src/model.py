@@ -129,6 +129,9 @@ def build_model():
     x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv8_3', kernel_initializer="he_normal",
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
+    # TODO: test
+    x = BatchNormalization()(x)
+
     # 1x1 conv and cross-entropy loss layer
     # TODO: check softmax
     outputs = Conv2D(num_colors, (1, 1), activation='softmax', padding='same', name='pred')(x)
