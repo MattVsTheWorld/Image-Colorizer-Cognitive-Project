@@ -3,7 +3,7 @@ import tensorflow as tf
 from keras.layers import Input, Conv2D, BatchNormalization, UpSampling2D
 from keras.models import Model
 from keras.regularizers import l2
-from keras.utils import multi_gpu_model
+# from keras.utils import multi_gpu_model
 from keras.utils import plot_model
 
 from src.config import img_rows, img_cols, num_colors, kernel_size
@@ -139,10 +139,10 @@ def main():
     print(encoder_decoder.summary())
     plot_model(encoder_decoder, to_file='encoder_decoder.svg', show_layer_names=True, show_shapes=True)
 
-    # Possibility of multi-gpu model
-    parallel_model = multi_gpu_model(encoder_decoder, gpus=None)
-    print(parallel_model.summary())
-    plot_model(parallel_model, to_file='parallel_model.svg', show_layer_names=True, show_shapes=True)
+    # # Possibility of multi-gpu model
+    # parallel_model = multi_gpu_model(encoder_decoder, gpus=None)
+    # print(parallel_model.summary())
+    # plot_model(parallel_model, to_file='parallel_model.svg', show_layer_names=True, show_shapes=True)
 
     # try:
     #     model = multi_gpu_model(model, cpu_relocation=True)

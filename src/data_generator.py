@@ -154,9 +154,15 @@ def split_data(image_folder: str, fmt: str):
     with open('image_names/train_names.txt', 'w') as file:
         file.write('\n'.join(train_names))
 
+    with open('image_names/valid_num.txt', 'w') as file:
+        file.write(str(num_valid_samples))
+
+    with open('image_names/train_num.txt', 'w') as file:
+        file.write(str(num_train_samples))
+
 
 def main():
-    image_folder: str = os.pardir + 'test_imgs/bird'
+    image_folder: str = os.pardir + '/test_imgs/bird'
     fmt: str = '.jpeg'
     split_data(image_folder, fmt)
 
