@@ -6,6 +6,6 @@ num_colors = 313
 data_dir = 'data/'
 
 patience = 50
-epochs = 50
+epochs = 1000
 learning_rate = 0.00001
 T = 0.38
