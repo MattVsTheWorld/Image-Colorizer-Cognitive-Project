@@ -13,7 +13,7 @@ sys.stderr = stderr
 import numpy as np
 import sklearn.neighbors as nn
 
-from src.config import img_rows, img_cols, data_dir, T
+from src.config import img_rows, img_cols, data_dir, T, imgs_dir
 from src.model import build_model
 
 
@@ -28,7 +28,7 @@ def main():
 
     print(model.summary())
 
-    image_folder: str = os.pardir + '/test_imgs/bird'
+    image_folder: str = os.pardir + imgs_dir
     names_file: str = 'image_names/valid_names.txt'
     with open(names_file, 'r') as f:
         names = f.read().splitlines()
@@ -45,6 +45,16 @@ def main():
 
     # Fit a NN to q_ab
     nn_finder = nn.NearestNeighbors(algorithm='ball_tree').fit(q_ab)
+
+    # Clear folder
+    for the_file in os.listdir('output_images'):
+        file_path = os.path.join('output_images', the_file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+            # elif os.path.isdir(file_path): shutil.rmtree(file_path)
+        except Exception as e:
+            print(e)
 
     for i in range(len(samples)):
         image_name = samples[i]
@@ -78,7 +88,7 @@ def main():
         q_b = q_ab[:, 1].reshape((1, 313))
 
         # Add the predicted colors
-        # TODO: check axis
+        # axis 1 = colums; sum all values in rows
         X_a = np.sum(X_colorized * q_a, 1).reshape((height, width))
         X_b = np.sum(X_colorized * q_b, 1).reshape((height, width))
 

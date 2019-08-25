@@ -24,6 +24,8 @@ def build_model():
     # 64 (output channels), 3x3 kernel
     # he normal = truncated normal distribution centered on 0
     # ----------------------------------------------------------------------------
+    # ---------------------------------- Conv 1 ----------------------------------
+    # ----------------------------------------------------------------------------
     x = Conv2D(64, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv1_1', kernel_initializer="he_normal",
                kernel_regularizer=l2_reg, strides=(1, 1))(input_tensor)
@@ -34,6 +36,8 @@ def build_model():
     # Spacial resolution of output = 112
     x = BatchNormalization()(x)
     # ----------------------------------------------------------------------------
+    # ---------------------------------- Conv 2 ----------------------------------
+    # ----------------------------------------------------------------------------
     x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv2_1', kernel_initializer="he_normal",
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
@@ -43,6 +47,8 @@ def build_model():
                kernel_regularizer=l2_reg, strides=(2, 2))(x)
     # Spacial resolution of output = 56
     x = BatchNormalization()(x)
+    # ----------------------------------------------------------------------------
+    # ---------------------------------- Conv 3 ----------------------------------
     # ----------------------------------------------------------------------------
     x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv3_1', kernel_initializer="he_normal",
@@ -58,6 +64,8 @@ def build_model():
     # Spacial resolution of output = 28
     x = BatchNormalization()(x)
     # ----------------------------------------------------------------------------
+    # ---------------------------------- Conv 4 ----------------------------------
+    # ----------------------------------------------------------------------------
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv4_1', kernel_initializer="he_normal",
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
@@ -71,6 +79,8 @@ def build_model():
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = BatchNormalization()(x)
+    # ----------------------------------------------------------------------------
+    # ---------------------------------- Conv 5 ----------------------------------
     # ----------------------------------------------------------------------------
     # Notice dilated convolution
     # Dilated convolution is a basic convolution only applied to the input volume with defined gaps
@@ -88,6 +98,8 @@ def build_model():
     # Spacial resolution of output = 28
     x = BatchNormalization()(x)
     # ----------------------------------------------------------------------------
+    # ---------------------------------- Conv 6 ----------------------------------
+    # ----------------------------------------------------------------------------
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
                dilation_rate=2, name='conv6_1', kernel_initializer="he_normal",
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
@@ -102,35 +114,39 @@ def build_model():
     # Spacial resolution of output = 28
     x = BatchNormalization()(x)
     # ----------------------------------------------------------------------------
+    # ---------------------------------- Conv 7 ----------------------------------
+    # ----------------------------------------------------------------------------
     # No more dilation
-    x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
+    x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv7_1', kernel_initializer="he_normal",
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
-    x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
+    x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv7_2', kernel_initializer="he_normal",
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
-    x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
+    x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv7_3', kernel_initializer="he_normal",
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = BatchNormalization()(x)
     # ----------------------------------------------------------------------------
+    # ---------------------------------- Conv 8 ----------------------------------
+    # ----------------------------------------------------------------------------
     # Upsample before convolution
     x = UpSampling2D(size=(2, 2))(x)
     # Spacial resolution of output = 56
-    x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
+    x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv8_1', kernel_initializer="he_normal",
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
-    x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
+    x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv8_2', kernel_initializer="he_normal",
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
-    x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
+    x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv8_3', kernel_initializer="he_normal",
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # TODO: test
-    x = BatchNormalization()(x)
+    # x = BatchNormalization()(x)
 
     # 1x1 conv and cross-entropy loss layer
     # TODO: check softmax

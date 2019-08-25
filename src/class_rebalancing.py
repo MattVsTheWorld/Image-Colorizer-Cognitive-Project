@@ -6,11 +6,11 @@ import numpy as np
 import sklearn.neighbors as nn
 from scipy.interpolate import interp1d
 from scipy.signal import gaussian, convolve
-from src.config import data_dir
+from src.config import data_dir, imgs_dir
 
 
-def load_data(size: int = 64,
-              image_folder: str = os.pardir + 'test_imgs/bird',
+def load_data(size: int,
+              image_folder: str = os.pardir + imgs_dir,
               fmt: str = '.jpeg') -> ndarray:
     """
     Loads a sample of images
@@ -107,10 +107,10 @@ def compute_prior_factor(gamma: float = 0.5, alpha: int = 1):
     """
     prior_prob_smoothed = np.load(os.path.join(data_dir, "prior_prob_smoothed.npy"))
 
-    u: ndarray = np.ones_like(prior_prob_smoothed)
-    u: ndarray = u / np.sum(1.0 * u)
+    uni_probs: ndarray = np.ones_like(prior_prob_smoothed)
+    uni_probs: ndarray = uni_probs / np.sum(1.0 * uni_probs)
 
-    prior_factor = (1 - gamma) * prior_prob_smoothed + gamma * u
+    prior_factor = (1 - gamma) * prior_prob_smoothed + gamma * uni_probs
     prior_factor = np.power(prior_factor, -alpha)
 
     # renormalize
@@ -120,7 +120,7 @@ def compute_prior_factor(gamma: float = 0.5, alpha: int = 1):
 
 
 def main():
-    image_folder: str = os.pardir + '/test_imgs/bird'
+    image_folder: str = os.pardir + imgs_dir
     size: int = 64
     # Load the sample of images
     X_ab = load_data(size, image_folder)

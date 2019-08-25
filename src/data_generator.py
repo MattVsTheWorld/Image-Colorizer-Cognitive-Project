@@ -11,7 +11,9 @@ stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w')
 from keras.utils import Sequence
 sys.stderr = stderr
-from src.config import percentage_training, batch_size, img_rows, img_cols
+from src.config import percentage_training, batch_size, img_rows, img_cols, imgs_dir, train_set_dim
+from glob import glob
+import shutil
 
 
 def get_soft_encoding(image_ab, nn_finder, num_q) -> ndarray:
@@ -81,10 +83,9 @@ class DataGenSequence(Sequence):
         # First element of the batch
         i: int = idx * batch_size
 
-        art: int = 4
         out_img_rows: int
         out_img_cols: int
-        out_img_rows, out_img_cols = img_rows // art, img_cols // art
+        out_img_rows, out_img_cols = img_rows // 4, img_cols // 4
         # Batch is either full or partial (last batch)
         length: int = min(batch_size, (len(self.names) - i))
 
@@ -165,8 +166,33 @@ def split_data(image_folder: str, fmt: str):
         file.write(str(num_train_samples))
 
 
+def generate_dataset():
+    source_folder: str = os.pardir + '/imagenet/ILSVRC2017_CLS-LOC/ILSVRC/Data/CLS-LOC/train'
+    destination_folder: str = os.pardir + imgs_dir
+    folder_list: List[str] = next(os.walk(source_folder))[1]
+
+    # Clear folder
+    for the_file in os.listdir(destination_folder):
+        file_path = os.path.join(destination_folder, the_file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+            # elif os.path.isdir(file_path): shutil.rmtree(file_path)
+        except Exception as e:
+            print(e)
+
+    # avg size of img = 200kb
+    total_size: int = 0     # current byte size of folder
+    while total_size < (train_set_dim * 2**20):
+        chosen_one: str = random.choice(folder_list)
+        img_path = random.choice(glob(source_folder + '/' + chosen_one + '/*.jpeg'))
+        total_size += os.path.getsize(img_path)
+        shutil.copy(img_path, destination_folder)
+
+
 def main():
-    image_folder: str = os.pardir + '/test_imgs/bird'
+    generate_dataset()
+    image_folder: str = os.pardir + imgs_dir
     fmt: str = '.jpeg'
     split_data(image_folder, fmt)
 

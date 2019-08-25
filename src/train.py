@@ -8,7 +8,7 @@ sys.stderr = stderr
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 
 from numpy.core._multiarray_umath import ndarray
-from src.config import patience, epochs, batch_size, learning_rate
+from src.config import patience, epochs, batch_size, learning_rate, imgs_dir
 from src.data_generator import train_gen, valid_gen
 from src.model import build_model
 
@@ -60,7 +60,7 @@ def main():
 
     # TODO: Adam
     # Optimizer
-    sgd = keras.optimizers.SGD(lr=0.001, momentum=0.9, nesterov=True, clipnorm=5.)
+    sgd = keras.optimizers.SGD(lr=learning_rate, momentum=0.9, nesterov=True, clipnorm=5.)
     new_model.compile(optimizer=sgd, loss='categorical_crossentropy')
     # adam = keras.optimizers.Adam(lr=learning_rate, beta_1=0.9, beta_2=0.99, epsilon=1e-08)
     # new_model.compile(optimizer=adam, loss=categorical_crossentropy_color)
@@ -77,7 +77,7 @@ def main():
         num_valid_samples = int(f.read())
 
     # Start Fine-tuning
-    image_folder: str = os.pardir + '/test_imgs/bird'
+    image_folder: str = os.pardir + imgs_dir
     new_model.fit_generator(train_gen(image_folder),
                             steps_per_epoch=num_train_samples // batch_size,
                             validation_data=valid_gen(image_folder),
