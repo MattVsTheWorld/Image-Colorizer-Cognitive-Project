@@ -14,6 +14,7 @@ sys.stderr = stderr
 from src.config import percentage_training, batch_size, img_rows, img_cols, imgs_dir, train_set_dim
 from glob import glob
 import shutil
+from tqdm import tqdm
 
 
 def get_soft_encoding(image_ab, nn_finder, num_q) -> ndarray:
@@ -172,7 +173,8 @@ def generate_dataset():
     folder_list: List[str] = next(os.walk(source_folder))[1]
 
     # Clear folder
-    for the_file in os.listdir(destination_folder):
+    print("Clearing folder...")
+    for the_file in tqdm(os.listdir(destination_folder)):
         file_path = os.path.join(destination_folder, the_file)
         try:
             if os.path.isfile(file_path):
@@ -180,8 +182,10 @@ def generate_dataset():
             # elif os.path.isdir(file_path): shutil.rmtree(file_path)
         except Exception as e:
             print(e)
+    print("Done")
 
     # avg size of img = 200kb
+    # print("Fetching images", sep=' ', end='')
     total_size: int = 0     # current byte size of folder
     while total_size < (train_set_dim * 2**20):
         chosen_one: str = random.choice(folder_list)

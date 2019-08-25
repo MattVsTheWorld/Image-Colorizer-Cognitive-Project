@@ -6,8 +6,8 @@ sys.stderr = open(os.devnull, 'w')
 import keras
 sys.stderr = stderr
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+from keras import metrics
 
-from numpy.core._multiarray_umath import ndarray
 from src.config import patience, epochs, batch_size, learning_rate, imgs_dir
 from src.data_generator import train_gen, valid_gen
 from src.model import build_model
@@ -55,13 +55,17 @@ def main():
     reduce_lr = ReduceLROnPlateau('val_loss', factor=0.1, patience=int(patience / 4), verbose=1)
 
     new_model = build_model()
-    if pretrained_path is not None:
-        new_model.load_weights(pretrained_path)
 
-    # TODO: Adam
+    # if pretrained_path is not None:
+    #     new_model.load_weights(pretrained_path)
+
+    # TODO: Adam (doesn't work)
     # Optimizer
     sgd = keras.optimizers.SGD(lr=learning_rate, momentum=0.9, nesterov=True, clipnorm=5.)
     new_model.compile(optimizer=sgd, loss='categorical_crossentropy')
+    #  TODO: Test
+    # ,metrics=[metrics.categorical_accuracy])
+
     # adam = keras.optimizers.Adam(lr=learning_rate, beta_1=0.9, beta_2=0.99, epsilon=1e-08)
     # new_model.compile(optimizer=adam, loss=categorical_crossentropy_color)
     # Print model stats
@@ -76,7 +80,7 @@ def main():
     with open('image_names/valid_num.txt', 'r') as f:
         num_valid_samples = int(f.read())
 
-    # Start Fine-tuning
+    # Start/resume training
     image_folder: str = os.pardir + imgs_dir
     new_model.fit_generator(train_gen(image_folder),
                             steps_per_epoch=num_train_samples // batch_size,

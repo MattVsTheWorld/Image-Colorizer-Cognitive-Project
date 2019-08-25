@@ -6,7 +6,7 @@ import numpy as np
 import sklearn.neighbors as nn
 from scipy.interpolate import interp1d
 from scipy.signal import gaussian, convolve
-from src.config import data_dir, imgs_dir
+from src.config import data_dir, imgs_dir, prior_sample_size
 
 
 def load_data(size: int,
@@ -21,7 +21,7 @@ def load_data(size: int,
     """
     names: List[str] = [f for f in os.listdir(image_folder) if f.lower().endswith(fmt)]
     np.random.shuffle(names)
-    num_samples: int = 1000
+    num_samples: int = prior_sample_size
     X_ab: ndarray = np.empty((num_samples, size, size, 2))
     # Take the first num_samples (shuffled) images
     for i in range(num_samples):
