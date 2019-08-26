@@ -182,16 +182,22 @@ def generate_dataset():
             # elif os.path.isdir(file_path): shutil.rmtree(file_path)
         except Exception as e:
             print(e)
-    print("Done")
+    print("\nDone")
 
     # avg size of img = 200kb
     # print("Fetching images", sep=' ', end='')
     total_size: int = 0     # current byte size of folder
+    print("Fetching dataset...")
+    pbar = tqdm(total=train_set_dim)
     while total_size < (train_set_dim * 2**20):
         chosen_one: str = random.choice(folder_list)
         img_path = random.choice(glob(source_folder + '/' + chosen_one + '/*.jpeg'))
-        total_size += os.path.getsize(img_path)
+        size = os.path.getsize(img_path)
+        total_size += size
+        pbar.update(size / 2**20)
         shutil.copy(img_path, destination_folder)
+    pbar.close()
+    print("\nDone")
 
 
 def main():

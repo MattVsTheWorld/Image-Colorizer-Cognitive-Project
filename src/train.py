@@ -12,13 +12,13 @@ from src.config import patience, epochs, batch_size, learning_rate, imgs_dir
 from src.data_generator import train_gen, valid_gen
 from src.model import build_model
 
-# TODO: TEST ---------------------------------------
 import numpy as np
 import tensorflow as tf
 
 
 def categorical_crossentropy_color(y_true, y_pred):
     q = 313
+
     y_true = keras.backend.reshape(y_true, (-1, q))
     y_pred = keras.backend.reshape(y_pred, (-1, q))
 
@@ -31,10 +31,31 @@ def categorical_crossentropy_color(y_true, y_pred):
     y_true = y_true * weights
 
     cross_ent = keras.backend.categorical_crossentropy(y_pred, y_true)
-    cross_ent = keras.backend.mean(cross_ent, axis=-1)
+    # cross_ent = keras.backend.mean(cross_ent, axis=-1)
+    cross_ent = keras.backend.sum(cross_ent, axis=-1)
 
     return cross_ent
-# TODO: TEST ---------------------------------------
+
+
+# def categorical_crossentropy_color(y_true, y_pred):
+#
+#     # Flatten
+#     n, h, w, q = y_true.shape
+#     y_true = keras.backend.reshape(y_true, (n * h * w, q))
+#     y_pred = keras.backend.reshape(y_pred, (n * h * w, q))
+#
+#     weights = y_true[:, 313:]  # extract weight from y_true
+#     weights = keras.backend.concatenate([weights] * 313, axis=1)
+#     y_true = y_true[:, :-1]  # remove last column
+#     y_pred = y_pred[:, :-1]  # remove last column
+#
+#     # multiply y_true by weights
+#     y_true = y_true * weights
+#
+#     cross_ent = keras.backend.categorical_crossentropy(y_pred, y_true)
+#     cross_ent = keras.backend.mean(cross_ent, axis=-1)
+#
+#     return cross_ent
 
 
 def main():
@@ -61,8 +82,10 @@ def main():
 
     # TODO: Adam (doesn't work)
     # Optimizer
-    sgd = keras.optimizers.SGD(lr=learning_rate, momentum=0.9, nesterov=True, clipnorm=5.)
-    new_model.compile(optimizer=sgd, loss='categorical_crossentropy')
+    # sgd = keras.optimizers.SGD(lr=learning_rate, momentum=0.9, nesterov=True, clipnorm=5.)
+    # new_model.compile(optimizer=sgd, loss=categorical_crossentropy_color)
+    opt = keras.optimizers.Adam(lr=1E-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+    new_model.compile(loss=categorical_crossentropy_color, optimizer=opt)
     #  TODO: Test
     # ,metrics=[metrics.categorical_accuracy])
 

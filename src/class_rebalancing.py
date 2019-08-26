@@ -88,6 +88,7 @@ def smooth_color_prior(sigma: int = 5):
     x_coord = np.linspace(0, prior_prob.shape[0] - 1, 1000)
     y_coord = f(x_coord)
     # 2000 points in the window
+    # Page 6 @ paper
     window = gaussian(2000, sigma)
     smoothed = convolve(y_coord, window / window.sum(), mode='same')
     fout = interp1d(x_coord, smoothed)

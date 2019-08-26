@@ -56,6 +56,7 @@ def main():
         except Exception as e:
             print(e)
 
+    print("Using model" + model_weights_path)
     for i in range(len(samples)):
         image_name = samples[i]
         filename = os.path.join(image_folder, image_name)
@@ -118,6 +119,7 @@ def main():
         cv2.imwrite('output_images/{}_out.png'.format(i), out_bgr)
 
     K.clear_session()
+
 
 
 if __name__ == '__main__':
