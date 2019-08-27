@@ -44,7 +44,7 @@ def main():
     nb_q: int = q_ab.shape[0]
 
     # Fit a NN to q_ab
-    nn_finder = nn.NearestNeighbors(algorithm='ball_tree').fit(q_ab)
+    # nn_finder = nn.NearestNeighbors(algorithm='ball_tree').fit(q_ab)
 
     # Clear folder
     for the_file in os.listdir('output_images'):
@@ -119,7 +119,6 @@ def main():
         cv2.imwrite('output_images/{}_out.png'.format(i), out_bgr)
 
     K.clear_session()
-
 
 
 if __name__ == '__main__':

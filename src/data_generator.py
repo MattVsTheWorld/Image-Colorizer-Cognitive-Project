@@ -94,7 +94,8 @@ class DataGenSequence(Sequence):
         batch_x: ndarray = np.empty((length, img_rows, img_cols, 1), dtype=np.float32)
         # e.g. shape= (32, 64, 64, 313)
         batch_y: ndarray = np.empty((length, out_img_rows, out_img_cols, self.num_q), dtype=np.float32)
-
+        # TODO: remove
+        np.set_printoptions(threshold=sys.maxsize)
         for i_batch in range(length):
             name: str = self.names[i]
             filename: str = os.path.join(self.image_folder, name)
@@ -105,10 +106,11 @@ class DataGenSequence(Sequence):
             # Normalize
             x: ndarray = gray / 255.
 
-            out_lab: ndarray = cv2.resize(lab, (out_img_rows, out_img_cols), cv2.INTER_AREA)
+            out_lab: ndarray = cv2.resize(lab, (out_img_rows, out_img_cols), cv2.INTER_CUBIC)
             # rows, columns, L a b; skip L
             out_ab: ndarray = out_lab[:, :, 1:].astype(np.int32) - 128
-
+            #TODO: remove
+            # print(out_ab)
             y: ndarray = get_soft_encoding(out_ab, self.nn_finder, self.num_q)
 
             # if np.random.random_sample() > 0.5:
@@ -122,6 +124,7 @@ class DataGenSequence(Sequence):
 
             i += 1
 
+        # print(batch_y.shape)
         return batch_x, batch_y
 
     def on_epoch_end(self):
@@ -189,8 +192,9 @@ def generate_dataset():
     total_size: int = 0     # current byte size of folder
     print("Fetching dataset...")
     pbar = tqdm(total=train_set_dim)
+    # TODO: moved
+    chosen_one: str = random.choice(folder_list)
     while total_size < (train_set_dim * 2**20):
-        chosen_one: str = random.choice(folder_list)
         img_path = random.choice(glob(source_folder + '/' + chosen_one + '/*.jpeg'))
         size = os.path.getsize(img_path)
         total_size += size

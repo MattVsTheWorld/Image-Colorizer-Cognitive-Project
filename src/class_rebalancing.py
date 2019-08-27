@@ -7,6 +7,7 @@ import sklearn.neighbors as nn
 from scipy.interpolate import interp1d
 from scipy.signal import gaussian, convolve
 from src.config import data_dir, imgs_dir, prior_sample_size
+from tqdm import tqdm
 
 
 def load_data(size: int,
@@ -21,14 +22,15 @@ def load_data(size: int,
     """
     names: List[str] = [f for f in os.listdir(image_folder) if f.lower().endswith(fmt)]
     np.random.shuffle(names)
-    num_samples: int = prior_sample_size
+    num_samples: int = len(names)  # prior_sample_size
+    print("Creating prior based on " + str(num_samples) + " images")
     X_ab: ndarray = np.empty((num_samples, size, size, 2))
     # Take the first num_samples (shuffled) images
-    for i in range(num_samples):
+    for i in tqdm(range(num_samples)):
         name: str = names[i]
         filename: str = os.path.join(image_folder, name)
         bgr: ndarray = cv2.imread(filename)
-        bgr = cv2.resize(bgr, (size, size), cv2.INTER_AREA)
+        bgr = cv2.resize(bgr, (size, size), cv2.INTER_CUBIC)
         lab: ndarray = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
         lab = lab.astype(np.int32)
         X_ab[i] = lab[:, :, 1:] - 128
@@ -60,8 +62,8 @@ def compute_color_prior(X_ab: ndarray):
     distribution: ndarray = np.nonzero(counts)[0]
 
     prior_prob: ndarray = np.zeros((q_ab.shape[0]))
-    # for i in range(q_ab.shape[0]): TODO: check memes
-    prior_prob[distribution] = counts[distribution]
+    for i in range(q_ab.shape[0]):  # TODO: check memes
+        prior_prob[distribution] = counts[distribution]
 
     # Transform into probability
     prior_prob = prior_prob / (1.0 * np.sum(prior_prob))
@@ -128,7 +130,6 @@ def main():
     # Calculate prior probability of color
     compute_color_prior(X_ab)
     smooth_color_prior()
-    # TODO: read paper
     compute_prior_factor()
 
 

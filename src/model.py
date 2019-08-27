@@ -4,13 +4,14 @@ stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w')
 sys.stderr = stderr
 import keras.backend as K
+from keras.layers.core import Lambda
 import tensorflow as tf
 from keras.layers import Input, Conv2D, BatchNormalization, UpSampling2D
 from keras.models import Model
 from keras.regularizers import l2
 from keras.utils import plot_model
 
-from src.config import img_rows, img_cols, num_colors, kernel_size
+from src.config import img_rows, img_cols, num_colors, kernel_size, batch_size
 
 
 def build_model():
@@ -21,17 +22,18 @@ def build_model():
     # Input image of specified shape (black and white)
     input_tensor = Input(shape=(img_rows, img_cols, 1))
 
+    kernel_init = 'he_normal'
     # 64 (output channels), 3x3 kernel
     # he normal = truncated normal distribution centered on 0
     # ----------------------------------------------------------------------------
     # ---------------------------------- Conv 1 ----------------------------------
     # ----------------------------------------------------------------------------
     x = Conv2D(64, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv1_1', kernel_initializer="he_normal",
+               name='conv1_1', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(input_tensor)
     # Spacial resolution of output = 224
     x = Conv2D(64, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv1_2', kernel_initializer="he_normal",
+               name='conv1_2', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(2, 2))(x)
     # Spacial resolution of output = 112
     x = BatchNormalization()(x)
@@ -39,11 +41,11 @@ def build_model():
     # ---------------------------------- Conv 2 ----------------------------------
     # ----------------------------------------------------------------------------
     x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv2_1', kernel_initializer="he_normal",
+               name='conv2_1', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 112
     x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv2_2', kernel_initializer="he_normal",
+               name='conv2_2', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(2, 2))(x)
     # Spacial resolution of output = 56
     x = BatchNormalization()(x)
@@ -51,15 +53,15 @@ def build_model():
     # ---------------------------------- Conv 3 ----------------------------------
     # ----------------------------------------------------------------------------
     x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv3_1', kernel_initializer="he_normal",
+               name='conv3_1', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 56
     x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv3_2', kernel_initializer="he_normal",
+               name='conv3_2', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 56
     x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv3_3', kernel_initializer="he_normal",
+               name='conv3_3', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(2, 2))(x)
     # Spacial resolution of output = 28
     x = BatchNormalization()(x)
@@ -67,15 +69,15 @@ def build_model():
     # ---------------------------------- Conv 4 ----------------------------------
     # ----------------------------------------------------------------------------
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv4_1', kernel_initializer="he_normal",
+               name='conv4_1', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv4_2', kernel_initializer="he_normal",
+               name='conv4_2', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv4_3', kernel_initializer="he_normal",
+               name='conv4_3', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = BatchNormalization()(x)
@@ -85,15 +87,15 @@ def build_model():
     # Notice dilated convolution
     # Dilated convolution is a basic convolution only applied to the input volume with defined gaps
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
-               dilation_rate=2, name='conv5_1', kernel_initializer="he_normal",
+               dilation_rate=2, name='conv5_1', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
-               dilation_rate=2, name='conv5_2', kernel_initializer="he_normal",
+               dilation_rate=2, name='conv5_2', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
-               dilation_rate=2, name='conv5_3', kernel_initializer="he_normal",
+               dilation_rate=2, name='conv5_3', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = BatchNormalization()(x)
@@ -101,15 +103,15 @@ def build_model():
     # ---------------------------------- Conv 6 ----------------------------------
     # ----------------------------------------------------------------------------
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
-               dilation_rate=2, name='conv6_1', kernel_initializer="he_normal",
+               dilation_rate=2, name='conv6_1', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
-               dilation_rate=2, name='conv6_2', kernel_initializer="he_normal",
+               dilation_rate=2, name='conv6_2', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
-               dilation_rate=2, name='conv6_3', kernel_initializer="he_normal",
+               dilation_rate=2, name='conv6_3', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = BatchNormalization()(x)
@@ -118,15 +120,15 @@ def build_model():
     # ----------------------------------------------------------------------------
     # No more dilation
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv7_1', kernel_initializer="he_normal",
+               name='conv7_1', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv7_2', kernel_initializer="he_normal",
+               name='conv7_2', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv7_3', kernel_initializer="he_normal",
+               name='conv7_3', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
     x = BatchNormalization()(x)
@@ -137,21 +139,18 @@ def build_model():
     x = UpSampling2D(size=(2, 2))(x)
     # Spacial resolution of output = 56
     x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv8_1', kernel_initializer="he_normal",
+               name='conv8_1', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv8_2', kernel_initializer="he_normal",
+               name='conv8_2', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
-               name='conv8_3', kernel_initializer="he_normal",
+               name='conv8_3', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # TODO: test
     # x = BatchNormalization()(x)
 
-    # 1x1 conv and cross-entropy loss layer
-    # TODO: check softmax
     outputs = Conv2D(num_colors, (1, 1), activation='softmax', padding='same', name='pred')(x)
-
     model = Model(inputs=input_tensor, outputs=outputs, name="ColorNet")
     return model
 
