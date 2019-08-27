@@ -5,12 +5,15 @@ stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w')
 import keras
 sys.stderr = stderr
-from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, LambdaCallback
+from math import floor
+from tensorflow.python.lib.io import file_io
 from keras import metrics
 
-from src.config import patience, epochs, batch_size, learning_rate, imgs_dir
+from src.config import patience, epochs, batch_size, learning_rate, percentage_training
 from src.data_generator import train_gen, valid_gen
 from src.model import build_model
+from src.image_pickler import image_unpickler
 
 import numpy as np
 import tensorflow as tf
@@ -44,25 +47,12 @@ def categorical_crossentropy_color(y_true, y_pred):
     return cross_ent
 
 
-# def categorical_crossentropy_color(y_true, y_pred):
-#
-#     # Flatten
-#     n, h, w, q = y_true.shape
-#     y_true = keras.backend.reshape(y_true, (n * h * w, q))
-#     y_pred = keras.backend.reshape(y_pred, (n * h * w, q))
-#
-#     weights = y_true[:, 313:]  # extract weight from y_true
-#     weights = keras.backend.concatenate([weights] * 313, axis=1)
-#     y_true = y_true[:, :-1]  # remove last column
-#     y_pred = y_pred[:, :-1]  # remove last column
-#
-#     # multiply y_true by weights
-#     y_true = y_true * weights
-#
-#     cross_ent = keras.backend.categorical_crossentropy(y_pred, y_true)
-#     cross_ent = keras.backend.mean(cross_ent, axis=-1)
-#
-#     return cross_ent
+def save_model_cloud(model, job_dir, name='model'):
+    filename = name + '.h5'
+    model.save(filename)
+    with file_io.FileIO(filename, mode='r') as inputFile:
+        with file_io.FileIO(job_dir + '/' + filename, mode='w+') as outFile:
+            outFile.write(inputFile.read())
 
 
 def main():
@@ -75,12 +65,13 @@ def main():
     checkpoint_models_path = 'models/'
 
     # Callbacks
-    tensor_board = keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=0, write_graph=True, write_images=True)
+    tensor_board = keras.callbacks.TensorBoard(log_dir='gs://cs-b-logs', histogram_freq=0, write_graph=True, write_images=True)
     # Save model (model.epoch.loss)
     model_names = checkpoint_models_path + 'model.{epoch:02d}-{val_loss:.4f}.hdf5'
-    model_checkpoint = ModelCheckpoint(model_names, monitor='val_loss', verbose=1, save_best_only=True)
+    # model_checkpoint = ModelCheckpoint(model_names, monitor='val_loss', verbose=1, save_best_only=True)
     early_stop = EarlyStopping('val_loss', patience=patience)
     reduce_lr = ReduceLROnPlateau('val_loss', factor=0.1, patience=int(patience / 4), verbose=1)
+    save_model = LambdaCallback(on_epoch_end=lambda epoch, logs: save_model_cloud(epoch, 1))
 
     new_model = build_model()
 
@@ -110,19 +101,20 @@ def main():
     print(new_model.summary())
 
     # Final callbacks
-    callbacks = [tensor_board, model_checkpoint, early_stop, reduce_lr]
+    callbacks = [tensor_board, save_model, early_stop, reduce_lr]
+
+    images = image_unpickler('images.pickle')
 
     # Read number of training and validation samples
-    with open('image_names/train_num.txt', 'r') as f:
-        num_train_samples = int(f.read())
-    with open('image_names/valid_num.txt', 'r') as f:
-        num_valid_samples = int(f.read())
+    num_train_samples = floor(len(images) * percentage_training)
+    num_valid_samples = floor(len(images) * (1 - percentage_training))
 
     # Start/resume training
-    image_folder: str = os.pardir + imgs_dir
-    new_model.fit_generator(train_gen(image_folder),
+
+
+    new_model.fit_generator(train_gen(images),
                             steps_per_epoch=num_train_samples // batch_size,
-                            validation_data=valid_gen(image_folder),
+                            validation_data=valid_gen(images),
                             validation_steps=num_valid_samples // batch_size,
                             epochs=epochs,
                             verbose=1,
@@ -134,3 +126,17 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+'''
+export JOB_NAME="test_job"
+export BUCKET_NAME=cs-b-bucket
+export CLOUD_CONFIG=src/cloudml-gpu.yaml
+export JOB_DIR=gs://cs-b-bucket/jobs/$JOB_NAME
+export MODULE=trainer.cloud._trainer
+export PACKAGE_PATH=./src
+export REGION=europe-west6
+export RUNTIME=1.2
+export TRAIN_FILE=gs://images_data/images.pickle
+
+gcloud ml-engine jobs submit training test_job --job-dir gs://cs-b-job-dir --runtime-version 1.2 --module-name trainer.cloud._trainer --package-path C:\Users\tomlo\Desktop\Cognitive-Project --region europe-west1 --config=src\cloudml-gpu.yaml --packages gs://images_data/images.pickle --module-name test_job
+'''

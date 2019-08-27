@@ -1,0 +1,6 @@
+jobId: my_job
+labels:
+  type: prod
+  owner: alice
+trainingInput:
+  scaleTier: BASIC
