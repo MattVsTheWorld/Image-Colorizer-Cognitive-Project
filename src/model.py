@@ -119,15 +119,15 @@ def build_model():
     # ---------------------------------- Conv 7 ----------------------------------
     # ----------------------------------------------------------------------------
     # No more dilation
-    x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
+    x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv7_1', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
-    x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
+    x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv7_2', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
-    x = Conv2D(512, (kernel_size, kernel_size), activation='relu', padding='same',
+    x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv7_3', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # Spacial resolution of output = 28
@@ -138,17 +138,17 @@ def build_model():
     # Upsample before convolution
     x = UpSampling2D(size=(2, 2))(x)
     # Spacial resolution of output = 56
-    x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
+    x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv8_1', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
-    x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
+    x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv8_2', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
-    x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
+    x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv8_3', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # TODO: test
-    # x = BatchNormalization()(x)
+    x = BatchNormalization()(x)
 
     outputs = Conv2D(num_colors, (1, 1), activation='softmax', padding='same', name='pred')(x)
     model = Model(inputs=input_tensor, outputs=outputs, name="ColorNet")

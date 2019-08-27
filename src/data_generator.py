@@ -11,15 +11,13 @@ stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w')
 from keras.utils import Sequence
 sys.stderr = stderr
-from src.config import percentage_training, batch_size, img_rows, img_cols, imgs_dir, train_set_dim
+from src.config import percentage_training, batch_size, img_rows, img_cols, imgs_dir, train_set_dim, nb_neighbors
 from glob import glob
 import shutil
 from tqdm import tqdm
 
 
 def get_soft_encoding(image_ab, nn_finder, num_q) -> ndarray:
-    height: int
-    width: int
     # take shape of first two
     height, width = image_ab.shape[:2]
 
@@ -44,7 +42,9 @@ def get_soft_encoding(image_ab, nn_finder, num_q) -> ndarray:
     # give each color a weight corresponding to how far are its closest 5 neighbours
     y[idx_pts, idx_neigh] = weights
     # num_q (313) as third shape; only num_neighbours (5) will have a non-0 value
-    y = np.reshape(y, (height, width, num_q))
+    # y = np.reshape(y, (height, width, num_q))
+    y = y.reshape(height, width, num_q)
+
     return y
 
 
@@ -62,14 +62,14 @@ class DataGenSequence(Sequence):
         with open(names_file, 'r') as f:
             self.names: List[str] = f.read().splitlines()
 
-        # np.random.shuffle(self.names)
+        np.random.shuffle(self.names)
 
         # Load the array of quantized ab value
-        q_ab: ndarray(dtype=int, shape=(313, 2)) = np.load("data/lab_gamut.npy")
+        q_ab: ndarray(dtype=int, shape=(313, 2)) = np.load("data/pts_in_hull.npy")
         self.num_q: int = q_ab.shape[0]
 
         # Fit a NN to q_ab
-        self.nn_finder = nn.NearestNeighbors(algorithm='ball_tree').fit(q_ab)
+        self.nn_finder = nn.NearestNeighbors(n_neighbors=nb_neighbors, algorithm='ball_tree').fit(q_ab)
 
     def __len__(self) -> int:
         # Number of batches
@@ -84,8 +84,6 @@ class DataGenSequence(Sequence):
         # First element of the batch
         i: int = idx * batch_size
 
-        out_img_rows: int
-        out_img_cols: int
         out_img_rows, out_img_cols = img_rows // 4, img_cols // 4
         # Batch is either full or partial (last batch)
         length: int = min(batch_size, (len(self.names) - i))
@@ -95,28 +93,34 @@ class DataGenSequence(Sequence):
         # e.g. shape= (32, 64, 64, 313)
         batch_y: ndarray = np.empty((length, out_img_rows, out_img_cols, self.num_q), dtype=np.float32)
         # TODO: remove
-        np.set_printoptions(threshold=sys.maxsize)
+        # np.set_printoptions(threshold=sys.maxsize)
         for i_batch in range(length):
             name: str = self.names[i]
-            filename: str = os.path.join(self.image_folder, name)
             # b: 0 <=b<=255, g: 0 <=g<=255, r: 0 <=r<=255.
-            bgr: ndarray = cv2.resize(cv2.imread(filename), (img_rows, img_cols))
-            gray: ndarray = cv2.resize(cv2.imread(filename, cv2.IMREAD_GRAYSCALE), (img_rows, img_cols))
-            lab: ndarray = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
-            # Normalize
-            x: ndarray = gray / 255.
+            filename: str = os.path.join(self.image_folder, name)
+
+            bgr = cv2.imread(filename)
+            bgr = cv2.resize(bgr, (img_rows, img_cols), cv2.INTER_CUBIC)
+
+            gray = cv2.imread(filename, 0)
+            gray = cv2.resize(gray, (img_rows, img_cols), cv2.INTER_CUBIC)
+
+            lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
+            x = gray / 255.
 
             out_lab: ndarray = cv2.resize(lab, (out_img_rows, out_img_cols), cv2.INTER_CUBIC)
             # rows, columns, L a b; skip L
+            # Before: 42 <=a<= 226, 20 <=b<= 223
+            # After: -86 <=a<= 98, -108 <=b<= 95
             out_ab: ndarray = out_lab[:, :, 1:].astype(np.int32) - 128
-            #TODO: remove
+            # TODO: remove
             # print(out_ab)
             y: ndarray = get_soft_encoding(out_ab, self.nn_finder, self.num_q)
 
-            # if np.random.random_sample() > 0.5:
-            #     # x is gray normalized
-            #     x = np.fliplr(x)
-            #     y = np.fliplr(y)
+            if np.random.random_sample() > 0.5:
+                # x is gray normalized
+                x = np.fliplr(x)
+                y = np.fliplr(y)
 
             # populate batches
             batch_x[i_batch, :, :, 0] = x
@@ -142,7 +146,7 @@ def valid_gen(image_folder: str) -> DataGenSequence:
 def split_data(image_folder: str, fmt: str):
     names: List[str] = [f for f in os.listdir(image_folder) if f.lower().endswith(fmt)]
     # Number of samples
-    num_samples: int = len(names)           # 2601
+    num_samples: int = len(names)
     print('num_samples: ' + str(num_samples))
 
     # Number of train/validation images
@@ -154,8 +158,8 @@ def split_data(image_folder: str, fmt: str):
     # Pick random validation file names
     valid_names = random.sample(names, num_valid_samples)
     train_names = [n for n in names if n not in valid_names]
-    # shuffle(valid_names)
-    # shuffle(train_names)
+    shuffle(valid_names)
+    shuffle(train_names)
 
     with open('image_names/valid_names.txt', 'w') as file:
         file.write('\n'.join(valid_names))

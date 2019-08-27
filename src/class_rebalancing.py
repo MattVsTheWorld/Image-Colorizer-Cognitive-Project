@@ -22,7 +22,7 @@ def load_data(size: int,
     """
     names: List[str] = [f for f in os.listdir(image_folder) if f.lower().endswith(fmt)]
     np.random.shuffle(names)
-    num_samples: int = len(names)  # prior_sample_size
+    num_samples: int = len(names) # // 5  # prior_sample_size
     print("Creating prior based on " + str(num_samples) + " images")
     X_ab: ndarray = np.empty((num_samples, size, size, 2))
     # Take the first num_samples (shuffled) images
@@ -42,7 +42,8 @@ def compute_color_prior(X_ab: ndarray):
     Calculate prior color probability of dataset
     :param X_ab: Sample of images
     """
-    q_ab: ndarray(dtype=int, shape=(313, 2)) = np.load(os.path.join(data_dir, "lab_gamut.npy"))
+    # q_ab: ndarray(dtype=int, shape=(313, 2)) = np.load(os.path.join(data_dir, "lab_gamut.npy"))
+    q_ab = np.load(os.path.join(data_dir, "pts_in_hull.npy"))
     X_a: ndarray = np.ravel(X_ab[:, :, :, 0])
     X_b: ndarray = np.ravel(X_ab[:, :, :, 1])
     X_ab: ndarray = np.vstack((X_a, X_b)).T
@@ -102,12 +103,7 @@ def smooth_color_prior(sigma: int = 5):
 
 
 def compute_prior_factor(gamma: float = 0.5, alpha: int = 1):
-    """
-    TODO: explain
-    :param gamma:
-    :param alpha:
-    :return:
-    """
+
     prior_prob_smoothed = np.load(os.path.join(data_dir, "prior_prob_smoothed.npy"))
 
     uni_probs: ndarray = np.ones_like(prior_prob_smoothed)

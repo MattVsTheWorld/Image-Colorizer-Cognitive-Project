@@ -13,7 +13,7 @@ sys.stderr = stderr
 import numpy as np
 import sklearn.neighbors as nn
 
-from src.config import img_rows, img_cols, data_dir, T, imgs_dir
+from src.config import img_rows, img_cols, data_dir, T, imgs_dir, nb_neighbors
 from src.model import build_model
 
 
@@ -29,22 +29,20 @@ def main():
     print(model.summary())
 
     image_folder: str = os.pardir + imgs_dir
-    names_file: str = 'image_names/valid_names.txt'
+    names_file: str = 'image_names/valid_names.txt'  # TODO: try on train
     with open(names_file, 'r') as f:
         names = f.read().splitlines()
     # Pick 10 samples from validation set
     samples = random.sample(names, 10)
 
-    height: int
-    width: int
     height, width = img_rows // 4, img_cols // 4
 
     # Load the array of quantized ab value
-    q_ab: ndarray = np.load(os.path.join(data_dir, "lab_gamut.npy"))
+    q_ab: ndarray = np.load(os.path.join(data_dir, "pts_in_hull.npy"))
     nb_q: int = q_ab.shape[0]
 
     # Fit a NN to q_ab
-    # nn_finder = nn.NearestNeighbors(algorithm='ball_tree').fit(q_ab)
+    nn_finder = nn.NearestNeighbors(n_neighbors=nb_neighbors, algorithm='ball_tree').fit(q_ab)
 
     # Clear folder
     for the_file in os.listdir('output_images'):
@@ -62,15 +60,14 @@ def main():
         filename = os.path.join(image_folder, image_name)
         print('Start processing image: {}'.format(filename))
         # b: 0 <=b<=255, g: 0 <=g<=255, r: 0 <=r<=255.
-        bgr: ndarray = cv2.resize(cv2.imread(filename), (img_rows, img_cols), cv2.INTER_AREA)
-        gray: ndarray = cv2.resize(cv2.imread(filename, cv2.IMREAD_GRAYSCALE), (img_rows, img_cols), cv2.INTER_AREA)
+        bgr = cv2.imread(filename)
+        gray = cv2.imread(filename, 0)
+        bgr = cv2.resize(bgr, (img_rows, img_cols), cv2.INTER_CUBIC)
+        gray = cv2.resize(gray, (img_rows, img_cols), cv2.INTER_CUBIC)
 
         # L: 0 <=L<= 255, a: 42 <=a<= 226, b: 20 <=b<= 223.
         lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
-        # Split into respective channels
-        L: ndarray = lab[:, :, 0]
-        a: ndarray = lab[:, :, 1]
-        b: ndarray = lab[:, :, 2]
+
         x_test: ndarray = np.empty((1, img_rows, img_cols, 1), dtype=np.float32)
         x_test[0, :, :, 0] = gray / 255.
 

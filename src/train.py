@@ -99,20 +99,13 @@ def main():
     #     """
     #     return keras.backend.sqrt(keras.backend.sum(keras.backend.square(y_pred - y_true), axis=-1))
 
+    # --- SGD ---
     sgd = keras.optimizers.SGD(lr=learning_rate, momentum=0.9, nesterov=True, clipnorm=5.)
     new_model.compile(optimizer=sgd, loss='categorical_crossentropy')
 
-    # -----------
+    # --- Adam ---
     # opt = keras.optimizers.Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
-    # new_model.compile(optimizer=opt, loss=euclidean_distance_loss)
-    # opt = keras.optimizers.Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
-    # new_model.compile(loss=categorical_crossentropy_color(), optimizer=opt)
-    #  TODO: Test
-    # ,metrics=[metrics.categorical_accuracy])
-
-    # adam = keras.optimizers.Adam(lr=learning_rate, beta_1=0.9, beta_2=0.99, epsilon=1e-08)
-    # new_model.compile(optimizer=adam, loss=categorical_crossentropy_color)
-    # Print model stats#
+    # new_model.compile(optimizer=opt, loss=categorical_crossentropy_color)
     # ------------
     print(new_model.summary())
 
