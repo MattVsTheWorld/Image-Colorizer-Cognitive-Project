@@ -158,48 +158,54 @@ def split_data(image_folder: str, fmt: str):
     with open('image_names/train_num.txt', 'w') as file:
         file.write(str(num_train_samples))
 '''
-'''
-def generate_dataset():
-    source_folder: str = os.pardir + '/imagenet/ILSVRC2017_CLS-LOC/ILSVRC/Data/CLS-LOC/train'
-    destination_folder: str = os.pardir + imgs_dir
-    folder_list: List[str] = next(os.walk(source_folder))[1]
-
-    # Clear folder
-    print("Clearing folder...")
-    for the_file in tqdm(os.listdir(destination_folder)):
-        file_path = os.path.join(destination_folder, the_file)
-        try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-            # elif os.path.isdir(file_path): shutil.rmtree(file_path)
-        except Exception as e:
-            print(e)
-    print("\nDone")
-
-    # avg size of img = 200kb
-    # print("Fetching images", sep=' ', end='')
-    total_size: int = 0     # current byte size of folder
-    print("Fetching dataset...")
-    pbar = tqdm(total=train_set_dim)
-    # TODO: moved
-
-    while total_size < (train_set_dim * 2**20):
-        chosen_one: str = random.choice(folder_list)
-        img_path = random.choice(glob(source_folder + '/' + chosen_one + '/*.jpeg'))
-        size = os.path.getsize(img_path)
-        total_size += size
-        pbar.update(size / 2**20)
-        shutil.copy(img_path, destination_folder)
-    pbar.close()
-    print("\nDone")
-
-
-def main():
-    generate_dataset()
-    image_folder: str = os.pardir + imgs_dir
-    fmt: str = '.jpeg'
-    'split_data(image_folder, fmt)'
-
-'''
-if __name__ == '__main__':
-    main()
+#
+# from tqdm import tqdm
+# import random
+# from glob import glob
+# import shutil
+#
+#
+# def generate_dataset():
+#     source_folder = os.pardir + '/imagenet/ILSVRC2017_CLS-LOC/ILSVRC/Data/CLS-LOC/train'
+#     destination_folder = os.pardir + imgs_dir
+#     folder_list = next(os.walk(source_folder))[1]
+#
+#     # Clear folder
+#     print("Clearing folder...")
+#     for the_file in tqdm(os.listdir(destination_folder)):
+#         file_path = os.path.join(destination_folder, the_file)
+#         try:
+#             if os.path.isfile(file_path):
+#                 os.unlink(file_path)
+#             # elif os.path.isdir(file_path): shutil.rmtree(file_path)
+#         except Exception as e:
+#             print(e)
+#     print("\nDone")
+#
+#     # avg size of img = 200kb
+#     # print("Fetching images", sep=' ', end='')
+#     total_size: int = 0     # current byte size of folder
+#     print("Fetching dataset...")
+#     pbar = tqdm(total=train_set_dim)
+#     # TODO: moved
+#
+#     while total_size < (train_set_dim * 2**20):
+#         chosen_one = random.choice(folder_list)
+#         img_path = random.choice(glob(source_folder + '/' + chosen_one + '/*.jpeg'))
+#         size = os.path.getsize(img_path)
+#         total_size += size
+#         pbar.update(size / 2**20)
+#         shutil.copy(img_path, destination_folder)
+#     pbar.close()
+#     print("\nDone")
+#
+#
+# def main():
+#     generate_dataset()
+#     # image_folder: str = os.pardir + imgs_dir
+#     # fmt: str = '.jpeg'
+#     # 'split_data(image_folder, fmt)'
+#
+#
+# if __name__ == '__main__':
+#     main()

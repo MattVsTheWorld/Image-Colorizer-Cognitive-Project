@@ -13,7 +13,7 @@ def image_pickler(images_folder_path, fmt):
         bgr = cv2.imread(filename)
         images_list.append(bgr)
     pickle_out = open("images.pickle", "wb")
-    pickle.dump(images_list, pickle_out)
+    pickle.dump(images_list, pickle_out, protocol=2)
     pickle_out.close()
 
 
@@ -23,22 +23,21 @@ def image_unpickler(pickler_file_path):
     return images
 
 
-
 def gcs_image_unpickler(pickler_file_path):
-    client = storage.Client.from_service_account_json('CS-Project-18e33cb1d7f4.json')
-    bucket = client.get_bucket('images_data')
+    client = storage.Client()  # .Client.from_service_account_json('CS-Project-18e33cb1d7f4.json')
+    bucket = client.get_bucket('images_regional')
     blob = bucket.get_blob('images.pickle')
     string = blob.download_as_string()
-    print(string)
+    # print(string)
     images = pickle.loads(string)
     return images
 
 
 def main():
-    # image_pickler(os.pardir + '/test_imgs/flower', 'jpg')
+    image_pickler('C:/Users/Matt/Desktop/big boy/dataset', '.jpeg')
     # images = image_unpickler('images.pickle')
-    images = gcs_image_unpickler('ahah')
-    print(images)
+    # images = gcs_image_unpickler('ahah')
+    # print(images)
 
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ kernel_size = 3
 num_colors = 313
 data_dir = 'data/'
 imgs_dir = '/test_imgs/dataset'
-train_set_dim  = 64     # mb
+train_set_dim = 20480     # mb
 prior_sample_size = 1000
 
 nb_neighbors = 5

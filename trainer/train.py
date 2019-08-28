@@ -53,13 +53,14 @@ def save_model_cloud(model, job_dir, name='model'):
             outFile.write(inputFile.read())
 
 
-def run():
+def run(args):
 
     # Parse arguments
     # ap = argparse.ArgumentParser()
     # ap.add_argument("-p", "--pretrained", help="path to save pretrained model files")
     # args = vars(ap.parse_args())
     # pretrained_path = args["pretrained"]
+
     checkpoint_models_path = 'models/'
 
     # Callbacks
@@ -102,10 +103,11 @@ def run():
     # Final callbacks
     callbacks = [tensor_board, model_checkpoint, early_stop, reduce_lr]
 
+    # print(">>> :" + args.job_dir)
+    images = gcs_image_unpickler(args.job_dir + 'images.pickle')
+    # for item in os.listdir(os.path.dirname(os.path.abspath(__file__))):
+    #     print(">> :" + item)
     # images = gcs_image_unpickler('images.pickle')
-    for item in os.listdir(os.path.dirname(os.path.abspath(__file__))):
-        print(">> :" + item)
-    images = gcs_image_unpickler('images.pickle')
 
     # Read number of training and validation samples
     num_train_samples = floor(len(images) * percentage_training)
