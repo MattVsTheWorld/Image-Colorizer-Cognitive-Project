@@ -13,8 +13,8 @@ sys.stderr = stderr
 import numpy as np
 import sklearn.neighbors as nn
 
-from src.config import img_rows, img_cols, data_dir, T, imgs_dir, nb_neighbors
-from src.model import build_model
+from trainer.config import img_rows, img_cols, data_dir, T, imgs_dir, nb_neighbors
+from trainer.model import build_model
 
 
 def main():

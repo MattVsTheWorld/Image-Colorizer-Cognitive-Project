@@ -11,7 +11,7 @@ stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w')
 from keras.utils import Sequence
 sys.stderr = stderr
-from src.config import percentage_training, batch_size, img_rows, img_cols, imgs_dir, train_set_dim, nb_neighbors
+from trainer.config import percentage_training, batch_size, img_rows, img_cols, imgs_dir, train_set_dim, nb_neighbors
 from glob import glob
 import shutil
 from math import floor

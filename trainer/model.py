@@ -11,7 +11,7 @@ from keras.models import Model
 from keras.regularizers import l2
 from keras.utils import plot_model
 
-from src.config import img_rows, img_cols, num_colors, kernel_size, batch_size
+from trainer.config import img_rows, img_cols, num_colors, kernel_size, batch_size
 
 
 def build_model():

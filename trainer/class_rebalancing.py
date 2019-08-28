@@ -6,7 +6,7 @@ import numpy as np
 import sklearn.neighbors as nn
 from scipy.interpolate import interp1d
 from scipy.signal import gaussian, convolve
-from src.config import data_dir, imgs_dir, prior_sample_size
+from trainer.config import data_dir, imgs_dir, prior_sample_size
 from tqdm import tqdm
 
 

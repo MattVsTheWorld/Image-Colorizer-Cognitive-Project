@@ -10,10 +10,10 @@ from math import floor
 from tensorflow.python.lib.io import file_io
 from keras import metrics
 
-from src.config import patience, epochs, batch_size, learning_rate, percentage_training
-from src.data_generator import train_gen, valid_gen
-from src.model import build_model
-from src.image_pickler import image_unpickler
+from trainer.config import patience, epochs, batch_size, learning_rate, percentage_training
+from trainer.data_generator import train_gen, valid_gen
+from trainer.model import build_model
+from trainer.image_pickler import image_unpickler
 
 import numpy as np
 import tensorflow as tf
@@ -55,7 +55,7 @@ def save_model_cloud(model, job_dir, name='model'):
             outFile.write(inputFile.read())
 
 
-def main():
+def run():
 
     # Parse arguments
     ap = argparse.ArgumentParser()
@@ -124,20 +124,3 @@ def main():
                             workers=8
                             )
 
-
-if __name__ == '__main__':
-    main()
-
-# '''
-# export JOB_NAME="test_job"
-# export BUCKET_NAME=cs-b-bucket
-# export CLOUD_CONFIG=src/cloudml-gpu.yaml
-# export JOB_DIR=gs://cs-b-bucket/jobs/$JOB_NAME
-# export MODULE=trainer.cloud._trainer
-# export PACKAGE_PATH=./src
-# export REGION=europe-west6
-# export RUNTIME=1.2
-# export TRAIN_FILE=gs://images_data/images.pickle
-#
-# gcloud ml-engine jobs submit training test_job --job-dir gs://cs-b-job-dir --runtime-version 1.2 --module-name trainer.cloud._trainer --package-path C:\Users\tomlo\Desktop\Cognitive-Project --region europe-west1 --config=src\cloudml-gpu.yaml --packages gs://images_data/images.pickle --module-name test_job
-# '''
