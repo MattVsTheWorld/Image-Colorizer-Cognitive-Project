@@ -9,6 +9,6 @@ setup(name='trainer',
       license='MIT',
       install_requires=[
           'keras',
-          'h5py',
+          'h5py', 'GoogleAppEngineCloudStorageClient', 'google', 'tensorflow'
       ],
       zip_safe=False)

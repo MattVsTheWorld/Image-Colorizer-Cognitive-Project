@@ -3,6 +3,9 @@ import os
 from typing import List
 import cv2
 from numpy.core._multiarray_umath import ndarray
+from google.cloud import storage
+from tensorflow.python.lib.io import file_io
+import cloudstorage as gcs
 
 
 def image_pickler(images_folder_path: str, fmt: str):
@@ -23,9 +26,18 @@ def image_unpickler(pickler_file_path):
     return images
 
 
+def gcs_image_unpickler(pickler_file_path):
+    #client = storage.Client.from_service_account_json(os.pardir + '\CS-Project-18e33cb1d7f4.json')
+    #bucket = client.get_bucket('images_data')
+    #blob = bucket.get_blob('images.pickle')
+    images = pickle.load(infile)
+    return images
+
+
 def main():
-    image_pickler(os.pardir + '/test_imgs/flower', 'jpg')
-    images = image_unpickler('images.pickle')
+    # image_pickler(os.pardir + '/test_imgs/flower', 'jpg')
+    # images = image_unpickler('images.pickle')
+    images = gcs_image_unpickler('ahah')
     print(images)
 
 
