@@ -2,6 +2,7 @@ import pickle
 import os
 from typing import List
 import cv2
+from src.config import imgs_dir
 from numpy.core._multiarray_umath import ndarray
 
 
@@ -24,10 +25,9 @@ def image_unpickler(pickler_file_path):
 
 
 def main():
-    image_pickler(os.pardir + '/test_imgs/flower', 'jpg')
+    image_pickler(os.pardir + imgs_dir, 'jpeg')
     images = image_unpickler('images.pickle')
     print(images)
-
 
 
 if __name__ == '__main__':

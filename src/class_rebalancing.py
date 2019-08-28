@@ -63,8 +63,8 @@ def compute_color_prior(X_ab: ndarray):
     distribution: ndarray = np.nonzero(counts)[0]
 
     prior_prob: ndarray = np.zeros((q_ab.shape[0]))
-    for i in range(q_ab.shape[0]):  # TODO: check memes
-        prior_prob[distribution] = counts[distribution]
+    # for i in range(q_ab.shape[0]):  # TODO: check memes
+    prior_prob[distribution] = counts[distribution]
 
     # Transform into probability
     prior_prob = prior_prob / (1.0 * np.sum(prior_prob))

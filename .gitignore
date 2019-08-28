@@ -11,3 +11,4 @@ src/models/
 src/data/
 src/image_names/
 /test_imgs/bird/
+src/images.pickle
