@@ -65,13 +65,14 @@ def main():
     checkpoint_models_path = 'models/'
 
     # Callbacks
+    # gs://cs-b-logs'
     tensor_board = keras.callbacks.TensorBoard(log_dir='gs://cs-b-logs', histogram_freq=0, write_graph=True, write_images=True)
     # Save model (model.epoch.loss)
     model_names = checkpoint_models_path + 'model.{epoch:02d}-{val_loss:.4f}.hdf5'
-    # model_checkpoint = ModelCheckpoint(model_names, monitor='val_loss', verbose=1, save_best_only=True)
+    model_checkpoint = ModelCheckpoint(model_names, monitor='val_loss', verbose=1, save_best_only=True, period=20)
     early_stop = EarlyStopping('val_loss', patience=patience)
     reduce_lr = ReduceLROnPlateau('val_loss', factor=0.1, patience=int(patience / 4), verbose=1)
-    save_model = LambdaCallback(on_epoch_end=lambda epoch, logs: save_model_cloud(epoch, 1))
+    # save_model = LambdaCallback(on_epoch_end=lambda epoch, logs: save_model_cloud(epoch, 25))
 
     new_model = build_model()
 
@@ -101,7 +102,7 @@ def main():
     print(new_model.summary())
 
     # Final callbacks
-    callbacks = [tensor_board, save_model, early_stop, reduce_lr]
+    callbacks = [tensor_board, model_checkpoint, early_stop, reduce_lr]
 
     images = image_unpickler('images.pickle')
 
@@ -127,16 +128,16 @@ def main():
 if __name__ == '__main__':
     main()
 
-'''
-export JOB_NAME="test_job"
-export BUCKET_NAME=cs-b-bucket
-export CLOUD_CONFIG=src/cloudml-gpu.yaml
-export JOB_DIR=gs://cs-b-bucket/jobs/$JOB_NAME
-export MODULE=trainer.cloud._trainer
-export PACKAGE_PATH=./src
-export REGION=europe-west6
-export RUNTIME=1.2
-export TRAIN_FILE=gs://images_data/images.pickle
-
-gcloud ml-engine jobs submit training test_job --job-dir gs://cs-b-job-dir --runtime-version 1.2 --module-name trainer.cloud._trainer --package-path C:\Users\tomlo\Desktop\Cognitive-Project --region europe-west1 --config=src\cloudml-gpu.yaml --packages gs://images_data/images.pickle --module-name test_job
-'''
+# '''
+# export JOB_NAME="test_job"
+# export BUCKET_NAME=cs-b-bucket
+# export CLOUD_CONFIG=src/cloudml-gpu.yaml
+# export JOB_DIR=gs://cs-b-bucket/jobs/$JOB_NAME
+# export MODULE=trainer.cloud._trainer
+# export PACKAGE_PATH=./src
+# export REGION=europe-west6
+# export RUNTIME=1.2
+# export TRAIN_FILE=gs://images_data/images.pickle
+#
+# gcloud ml-engine jobs submit training test_job --job-dir gs://cs-b-job-dir --runtime-version 1.2 --module-name trainer.cloud._trainer --package-path C:\Users\tomlo\Desktop\Cognitive-Project --region europe-west1 --config=src\cloudml-gpu.yaml --packages gs://images_data/images.pickle --module-name test_job
+# '''

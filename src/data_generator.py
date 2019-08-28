@@ -94,8 +94,10 @@ class DataGenSequence(Sequence):
         batch_y: ndarray = np.empty((length, out_img_rows, out_img_cols, self.num_q), dtype=np.float32)
         # TODO: remove
         # np.set_printoptions(threshold=sys.maxsize)
-        for i_batch in range(len(self.images)):
+        for i_batch in range(length):
             bgr = cv2.resize(self.images[i], (img_rows, img_cols), cv2.INTER_CUBIC)
+            # cv2.imshow('lol', bgr)
+            # cv2.waitKey()
 
             gray = cv2.resize(cv2.cvtColor(self.images[i], cv2.COLOR_BGR2GRAY), (img_rows, img_cols), cv2.INTER_CUBIC)
 
@@ -191,8 +193,9 @@ def generate_dataset():
     print("Fetching dataset...")
     pbar = tqdm(total=train_set_dim)
     # TODO: moved
-    chosen_one: str = random.choice(folder_list)
+
     while total_size < (train_set_dim * 2**20):
+        chosen_one: str = random.choice(folder_list)
         img_path = random.choice(glob(source_folder + '/' + chosen_one + '/*.jpeg'))
         size = os.path.getsize(img_path)
         total_size += size

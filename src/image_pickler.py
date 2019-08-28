@@ -2,6 +2,7 @@ import pickle
 import os
 from typing import List
 import cv2
+from src.config import imgs_dir
 from numpy.core._multiarray_umath import ndarray
 from google.cloud import storage
 from tensorflow.python.lib.io import file_io
@@ -39,7 +40,6 @@ def main():
     # images = image_unpickler('images.pickle')
     images = gcs_image_unpickler('ahah')
     print(images)
-
 
 
 if __name__ == '__main__':
