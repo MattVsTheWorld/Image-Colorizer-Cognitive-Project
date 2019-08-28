@@ -56,10 +56,10 @@ def save_model_cloud(model, job_dir, name='model'):
 def run():
 
     # Parse arguments
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-p", "--pretrained", help="path to save pretrained model files")
-    args = vars(ap.parse_args())
-    pretrained_path = args["pretrained"]
+    # ap = argparse.ArgumentParser()
+    # ap.add_argument("-p", "--pretrained", help="path to save pretrained model files")
+    # args = vars(ap.parse_args())
+    # pretrained_path = args["pretrained"]
     checkpoint_models_path = 'models/'
 
     # Callbacks
