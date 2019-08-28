@@ -2,6 +2,8 @@
 imagenet/
 venv/
 .idea/
+**/*.hdf5
+**/*.pickle
 **/*.jpg
 **/*.jpeg
 **/*.png
