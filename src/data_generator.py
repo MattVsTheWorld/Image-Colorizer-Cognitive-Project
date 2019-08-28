@@ -14,8 +14,8 @@ sys.stderr = stderr
 from src.config import percentage_training, batch_size, img_rows, img_cols, imgs_dir, train_set_dim, nb_neighbors
 from glob import glob
 import shutil
+from math import floor
 from tqdm import tqdm
-
 
 def get_soft_encoding(image_ab, nn_finder, num_q) -> ndarray:
     # take shape of first two
@@ -49,21 +49,21 @@ def get_soft_encoding(image_ab, nn_finder, num_q) -> ndarray:
 
 
 class DataGenSequence(Sequence):
-    def __init__(self, usage, image_folder):
+    def __init__(self, usage, images):
         # Train or validation
         self.usage: str = usage
-        self.image_folder = image_folder
+        self.images = images
 
         if usage == 'train':
-            names_file: str = 'image_names/train_names.txt'
+            self.num_img = percentage_training
         else:
-            names_file: str = 'image_names/valid_names.txt'
+            self.num_img = 1 - percentage_training
+            self.images = list(reversed(self.images))
 
-        with open(names_file, 'r') as f:
-            self.names: List[str] = f.read().splitlines()
+        self.upper_bound = floor(len(self.images) * self.num_img)
+        self.images = self.images[:self.upper_bound]
 
-        np.random.shuffle(self.names)
-
+        np.random.shuffle(self.images)
         # Load the array of quantized ab value
         q_ab: ndarray(dtype=int, shape=(313, 2)) = np.load("data/pts_in_hull.npy")
         self.num_q: int = q_ab.shape[0]
@@ -73,7 +73,7 @@ class DataGenSequence(Sequence):
 
     def __len__(self) -> int:
         # Number of batches
-        return int(np.ceil(len(self.names) / float(batch_size)))
+        return int(np.ceil(len(self.images) / float(batch_size)))
 
     def __getitem__(self, idx: int) -> Tuple[ndarray, ndarray]:
         """
@@ -86,7 +86,7 @@ class DataGenSequence(Sequence):
 
         out_img_rows, out_img_cols = img_rows // 4, img_cols // 4
         # Batch is either full or partial (last batch)
-        length: int = min(batch_size, (len(self.names) - i))
+        length: int = min(batch_size, (len(self.images) - i))
 
         # e.g. shape= (32, 256, 256, 1)
         batch_x: ndarray = np.empty((length, img_rows, img_cols, 1), dtype=np.float32)
@@ -94,16 +94,10 @@ class DataGenSequence(Sequence):
         batch_y: ndarray = np.empty((length, out_img_rows, out_img_cols, self.num_q), dtype=np.float32)
         # TODO: remove
         # np.set_printoptions(threshold=sys.maxsize)
-        for i_batch in range(length):
-            name: str = self.names[i]
-            # b: 0 <=b<=255, g: 0 <=g<=255, r: 0 <=r<=255.
-            filename: str = os.path.join(self.image_folder, name)
+        for i_batch in range(len(self.images)):
+            bgr = cv2.resize(self.images[i], (img_rows, img_cols), cv2.INTER_CUBIC)
 
-            bgr = cv2.imread(filename)
-            bgr = cv2.resize(bgr, (img_rows, img_cols), cv2.INTER_CUBIC)
-
-            gray = cv2.imread(filename, 0)
-            gray = cv2.resize(gray, (img_rows, img_cols), cv2.INTER_CUBIC)
+            gray = cv2.resize(cv2.cvtColor(self.images[i], cv2.COLOR_BGR2GRAY), (img_rows, img_cols), cv2.INTER_CUBIC)
 
             lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
             x = gray / 255.
@@ -132,15 +126,15 @@ class DataGenSequence(Sequence):
         return batch_x, batch_y
 
     def on_epoch_end(self):
-        np.random.shuffle(self.names)
+        np.random.shuffle(self.images)
 
 
-def train_gen(image_folder: str) -> DataGenSequence:
-    return DataGenSequence('train', image_folder)
+def train_gen(images) -> DataGenSequence:
+    return DataGenSequence('train', images)
 
 
-def valid_gen(image_folder: str) -> DataGenSequence:
-    return DataGenSequence('valid', image_folder)
+def valid_gen(images) -> DataGenSequence:
+    return DataGenSequence('valid', images)
 
 
 def split_data(image_folder: str, fmt: str):
@@ -213,7 +207,7 @@ def main():
     generate_dataset()
     image_folder: str = os.pardir + imgs_dir
     fmt: str = '.jpeg'
-    split_data(image_folder, fmt)
+    'split_data(image_folder, fmt)'
 
 
 if __name__ == '__main__':

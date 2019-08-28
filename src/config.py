@@ -4,7 +4,7 @@ img_rows, img_cols = 256, 256
 kernel_size: int = 3
 num_colors: int = 313
 data_dir = 'data/'
-imgs_dir = '/test_imgs/dataset'
+imgs_dir = '/test_imgs/flower'
 train_set_dim: int = 64     # mb
 prior_sample_size: int = 1000
 
