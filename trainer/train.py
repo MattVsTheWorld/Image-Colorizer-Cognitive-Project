@@ -8,7 +8,6 @@ sys.stderr = stderr
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, LambdaCallback
 from math import floor
 from tensorflow.python.lib.io import file_io
-from keras import metrics
 
 from trainer.config import patience, epochs, batch_size, learning_rate, percentage_training
 from trainer.data_generator import train_gen, valid_gen
@@ -16,7 +15,6 @@ from trainer.model import build_model
 from trainer.image_pickler import image_unpickler
 
 import numpy as np
-import tensorflow as tf
 
 
 def categorical_crossentropy_color(y_true, y_pred):

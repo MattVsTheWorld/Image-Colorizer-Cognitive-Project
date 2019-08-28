@@ -68,12 +68,12 @@ def main():
         # L: 0 <=L<= 255, a: 42 <=a<= 226, b: 20 <=b<= 223.
         lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
 
-        x_test: ndarray = np.empty((1, img_rows, img_cols, 1), dtype=np.float32)
+        x_test = np.empty((1, img_rows, img_cols, 1), dtype=np.float32)
         x_test[0, :, :, 0] = gray / 255.
 
         # L: 0 <=L<= 255, a: 42 <=a<= 226, b: 20 <=b<= 223.
         # --- Prediction ---
-        X_colorized: ndarray = model.predict(x_test)
+        X_colorized = model.predict(x_test)
         X_colorized = X_colorized.reshape((height * width, nb_q))
 
         # Reweight probabilities; epsilon avoids 0/NaN errors

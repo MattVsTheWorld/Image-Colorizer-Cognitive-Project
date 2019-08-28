@@ -1,17 +1,15 @@
 import pickle
 import os
-from typing import List
 import cv2
 from trainer.config import imgs_dir
-from numpy.core._multiarray_umath import ndarray
 from google.cloud import storage
 
 
-def image_pickler(images_folder_path: str, fmt: str):
-    names: List[str] = [f for f in os.listdir(images_folder_path) if f.lower().endswith(fmt)]
-    images_list: List[ndarray] = []
+def image_pickler(images_folder_path, fmt):
+    names = [f for f in os.listdir(images_folder_path) if f.lower().endswith(fmt)]
+    images_list = []
     for name in names:
-        filename: str = os.path.join(images_folder_path, name)
+        filename = os.path.join(images_folder_path, name)
         bgr = cv2.imread(filename)
         images_list.append(bgr)
     pickle_out = open("images.pickle", "wb")

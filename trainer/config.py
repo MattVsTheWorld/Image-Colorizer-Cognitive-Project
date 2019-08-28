@@ -1,16 +1,16 @@
-percentage_training: float = 0.992
-batch_size: int = 32
+percentage_training = 0.992
+batch_size = 32
 img_rows, img_cols = 128, 128
-kernel_size: int = 3
-num_colors: int = 313
+kernel_size = 3
+num_colors = 313
 data_dir = 'data/'
 imgs_dir = '/test_imgs/dataset'
-train_set_dim: int = 64     # mb
-prior_sample_size: int = 1000
+train_set_dim  = 64     # mb
+prior_sample_size = 1000
 
 nb_neighbors = 5
 
-patience: int = 50
-epochs: int = 1000
-learning_rate: float = 0.001
-T: float = 1
+patience = 50
+epochs = 1000
+learning_rate = 0.001
+T = 1
