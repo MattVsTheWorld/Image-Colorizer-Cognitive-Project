@@ -9,6 +9,10 @@ from keras.utils import Sequence
 sys.stderr = stderr
 from trainer.config import percentage_training, batch_size, img_rows, img_cols, imgs_dir, train_set_dim, nb_neighbors
 from math import floor
+from tensorflow.python.lib.io import file_io
+from google.cloud import storage
+
+
 
 def get_soft_encoding(image_ab, nn_finder, num_q):
     # take shape of first two
@@ -40,6 +44,16 @@ def get_soft_encoding(image_ab, nn_finder, num_q):
 
     return y
 
+def load_data(bucket_name):
+    bucket = storage.Client().get_bucket(bucket_name)
+
+    return np.array(
+        cv2.imdecode(
+            np.asarray(bytearray(blob.download_as_string()), dtype=np.uint8), 0
+        ).flatten()
+        for blob in bucket.list_blobs()
+        if blob.name.endswith(".npy")
+    )
 
 class DataGenSequence(Sequence):
     def __init__(self, usage, images):
@@ -58,7 +72,12 @@ class DataGenSequence(Sequence):
 
         np.random.shuffle(self.images)
         # Load the array of quantized ab value
-        q_ab = np.load("data/pts_in_hull.npy")
+
+        q_ab = load_data('images_regional')
+        print('-----------------------------')
+        print(q_ab)
+        print('-----------------------------')
+
         self.num_q = q_ab.shape[0]
 
         # Fit a NN to q_ab
