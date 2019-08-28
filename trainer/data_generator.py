@@ -53,7 +53,7 @@ class DataGenSequence(Sequence):
             self.num_img = 1 - percentage_training
             self.images = list(reversed(self.images))
 
-        self.upper_bound = floor(len(self.images) * self.num_img)
+        self.upper_bound = int(floor(len(self.images) * self.num_img))
         self.images = self.images[:self.upper_bound]
 
         np.random.shuffle(self.images)

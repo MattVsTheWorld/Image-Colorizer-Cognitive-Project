@@ -13,7 +13,7 @@ def image_pickler(images_folder_path, fmt):
         bgr = cv2.imread(filename)
         images_list.append(bgr)
     pickle_out = open("images.pickle", "wb")
-    pickle.dump(images_list, pickle_out)
+    pickle.dump(images_list, pickle_out, protocol=2)
     pickle_out.close()
 
 
@@ -35,10 +35,10 @@ def gcs_image_unpickler(pickler_file_path):
 
 
 def main():
-    # image_pickler(os.pardir + '/test_imgs/flower', 'jpg')
+    image_pickler(os.pardir + '/test_imgs/flower', 'jpg')
     # images = image_unpickler('images.pickle')
-    images = gcs_image_unpickler('ahah')
-    print(images)
+    #images = gcs_image_unpickler('ahah')
+    #print(images)
 
 
 if __name__ == '__main__':
