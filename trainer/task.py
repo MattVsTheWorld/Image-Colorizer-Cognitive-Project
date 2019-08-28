@@ -192,5 +192,5 @@ if __name__ == '__main__':
 
 '''
 Cambiare il nome del job aumentando di uno il numero e il path alla cartella trainer e al file yaml
-gcloud ai-platform jobs submit training BlessRng2 --job-dir gs://images_data/cs-job-dir/ --runtime-version 1.13 --module-name trainer.task --package-path C:\Users\Matt\Desktop\Cognitive-Project\trainer --region us-central1 --config=C:\Users\Matt\Desktop\Cognitive-Project\trainer\cloudml-gpu.yaml --stream-logs
+gcloud ai-platform jobs submit training madonna3 --job-dir gs://images_data/cs-job-dir/ --runtime-version 1.13 --module-name trainer.task --package-path C:\Users\Matt\Desktop\Cognitive-Project\trainer --region us-central1 --config=C:\Users\Matt\Desktop\Cognitive-Project\trainer\cloudml-gpu.yaml --stream-logs
 '''

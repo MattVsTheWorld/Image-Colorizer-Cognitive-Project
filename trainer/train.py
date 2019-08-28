@@ -12,7 +12,7 @@ from tensorflow.python.lib.io import file_io
 from trainer.config import patience, epochs, batch_size, learning_rate, percentage_training
 from trainer.data_generator import train_gen, valid_gen
 from trainer.model import build_model
-from trainer.image_pickler import image_unpickler
+from trainer.image_pickler import image_unpickler, gcs_image_unpickler
 
 import numpy as np
 
@@ -102,14 +102,16 @@ def run():
     # Final callbacks
     callbacks = [tensor_board, model_checkpoint, early_stop, reduce_lr]
 
-    images = image_unpickler('images.pickle')
+    # images = gcs_image_unpickler('images.pickle')
+    for item in os.listdir(os.path.dirname(os.path.abspath(__file__))):
+        print(">> :" + item)
+    images = gcs_image_unpickler('images.pickle')
 
     # Read number of training and validation samples
     num_train_samples = floor(len(images) * percentage_training)
     num_valid_samples = floor(len(images) * (1 - percentage_training))
 
     # Start/resume training
-
 
     new_model.fit_generator(train_gen(images),
                             steps_per_epoch=num_train_samples // batch_size,
