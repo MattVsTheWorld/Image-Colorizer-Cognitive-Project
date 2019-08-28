@@ -23,13 +23,12 @@ def image_unpickler(pickler_file_path):
     return images
 
 
-
 def gcs_image_unpickler(pickler_file_path):
-    client = storage.Client.from_service_account_json('CS-Project-18e33cb1d7f4.json')
-    bucket = client.get_bucket('images_data')
+    client = storage.Client()  # .Client.from_service_account_json('CS-Project-18e33cb1d7f4.json')
+    bucket = client.get_bucket('images_regional')
     blob = bucket.get_blob('images.pickle')
     string = blob.download_as_string()
-    print(string)
+    # print(string)
     images = pickle.loads(string)
     return images
 
