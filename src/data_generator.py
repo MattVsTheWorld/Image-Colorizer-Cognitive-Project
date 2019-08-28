@@ -197,8 +197,9 @@ def generate_dataset():
     print("Fetching dataset...")
     pbar = tqdm(total=train_set_dim)
     # TODO: moved
-    chosen_one: str = random.choice(folder_list)
+
     while total_size < (train_set_dim * 2**20):
+        chosen_one: str = random.choice(folder_list)
         img_path = random.choice(glob(source_folder + '/' + chosen_one + '/*.jpeg'))
         size = os.path.getsize(img_path)
         total_size += size
