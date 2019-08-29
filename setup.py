@@ -12,6 +12,6 @@ setup(name='trainer',
             'h5py',
             'GoogleAppEngineCloudStorageClient',
             'google',
-            'tensorflow'
+            'tensorflow', 'numpy'
       ],
       zip_safe=False)

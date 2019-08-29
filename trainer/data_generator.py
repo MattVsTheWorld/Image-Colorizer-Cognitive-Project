@@ -11,6 +11,7 @@ from trainer.config import percentage_training, batch_size, img_rows, img_cols, 
 from math import floor
 from tensorflow.python.lib.io import file_io
 from google.cloud import storage
+from trainer.image_pickler import gcs_npy_unpickler
 
 
 
@@ -44,16 +45,6 @@ def get_soft_encoding(image_ab, nn_finder, num_q):
 
     return y
 
-def load_data(bucket_name):
-    bucket = storage.Client().get_bucket(bucket_name)
-
-    return np.array(
-        cv2.imdecode(
-            np.asarray(bytearray(blob.download_as_string()), dtype=np.uint8), 0
-        ).flatten()
-        for blob in bucket.list_blobs()
-        if blob.name.endswith(".npy")
-    )
 
 class DataGenSequence(Sequence):
     def __init__(self, usage, images):
@@ -73,10 +64,7 @@ class DataGenSequence(Sequence):
         np.random.shuffle(self.images)
         # Load the array of quantized ab value
 
-        q_ab = load_data('images_regional')
-        print('-----------------------------')
-        print(q_ab)
-        print('-----------------------------')
+        q_ab = gcs_npy_unpickler('pts_in_hull.pickle')
 
         self.num_q = q_ab.shape[0]
 
@@ -103,16 +91,16 @@ class DataGenSequence(Sequence):
         # TODO: remove
         # np.set_printoptions(threshold=sys.maxsize)
         for i_batch in range(length):
-            bgr = cv2.resize(self.images[i], (img_rows, img_cols), cv2.INTER_CUBIC)
+            bgr = cv2.resize(self.images[i], (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
             # cv2.imshow('lol', bgr)
             # cv2.waitKey()
 
-            gray = cv2.resize(cv2.cvtColor(self.images[i], cv2.COLOR_BGR2GRAY), (img_rows, img_cols), cv2.INTER_CUBIC)
+            gray = cv2.resize(cv2.cvtColor(self.images[i], cv2.COLOR_BGR2GRAY), (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
 
             lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
             x = gray / 255.
 
-            out_lab = cv2.resize(lab, (out_img_rows, out_img_cols), cv2.INTER_CUBIC)
+            out_lab = cv2.resize(lab, (out_img_rows, out_img_cols), interpolation=cv2.INTER_CUBIC)
             # rows, columns, L a b; skip L
             # Before: 42 <=a<= 226, 20 <=b<= 223
             # After: -86 <=a<= 98, -108 <=b<= 95
@@ -219,12 +207,13 @@ def split_data(image_folder: str, fmt: str):
 #     print("\nDone")
 #
 #
-# def main():
-#     generate_dataset()
-#     # image_folder: str = os.pardir + imgs_dir
-#     # fmt: str = '.jpeg'
-#     # 'split_data(image_folder, fmt)'
-#
-#
-# if __name__ == '__main__':
-#     main()
+def main():
+     #generate_dataset()
+     # image_folder: str = os.pardir + imgs_dir
+     # fmt: str = '.jpeg'
+     q_ab = np.load(os.path.join('data/', "pts_in_hull.npy"))
+     print(q_ab)
+     # 'split_data(image_folder, fmt)'
+
+if __name__ == '__main__':
+     main()

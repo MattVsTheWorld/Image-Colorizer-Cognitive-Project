@@ -1,6 +1,6 @@
 percentage_training = 0.992
-batch_size = 32
-img_rows, img_cols = 128, 128
+batch_size = 512
+img_rows, img_cols = 256, 256
 kernel_size = 3
 num_colors = 313
 data_dir = 'data/'

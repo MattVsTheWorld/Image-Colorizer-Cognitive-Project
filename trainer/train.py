@@ -117,12 +117,17 @@ def run(args):
 
     new_model.fit_generator(train_gen(images),
                             steps_per_epoch=num_train_samples // batch_size,
-                            validation_data=valid_gen(images),
-                            validation_steps=num_valid_samples // batch_size,
                             epochs=epochs,
                             verbose=1,
                             callbacks=callbacks,
+                            validation_data=valid_gen(images),
+                            validation_steps=num_valid_samples // batch_size,
+                            validation_freq=1,
+                            class_weight=None,
+                            max_queue_size=10,
+                            workers=0,
                             use_multiprocessing=True,
-                            workers=8
+                            shuffle=True,
+                            initial_epoch=0
                             )
 
