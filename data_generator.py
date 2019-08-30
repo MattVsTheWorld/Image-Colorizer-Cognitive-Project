@@ -13,7 +13,7 @@ import random
 from tqdm import tqdm
 from glob import glob
 import shutil
-
+from utils import clear_folder
 
 def get_soft_encoding(image_ab, nn_finder, num_q):
     # ------------------------------------------------------
@@ -141,7 +141,7 @@ def split_data(image_folder, fmt):
     # Split a folder of images into training and validation data (percentage specified in config)
     # Validation data is not used for training, but is used to validate loss value
     # ------------------------------------------------------
-    names = [f for f in os.listdir(image_folder[1:]) if f.lower().endswith(fmt)]
+    names = [f for f in os.listdir(image_folder) if f.lower().endswith(fmt)]
     # Number of samples
     num_samples = len(names)
     print('num_samples: ' + str(num_samples))
@@ -180,18 +180,8 @@ def generate_dataset():
     destination_folder = 'generated_dataset'
     folder_list = next(os.walk(source_folder))[1]
 
-    # Clear folder
-    print("Clearing folder...")
-    for the_file in tqdm(os.listdir(destination_folder)):
-        file_path = os.path.join(destination_folder, the_file)
-        try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-        except Exception as e:
-            print(e)
-    print("\nDone")
-
-    # avg size of img = 200kb
+    clear_folder(destination_folder)
+    # The average size of an image is ~200kb
     # print("Fetching images", sep=' ', end='')
     total_size = 0     # current byte size of folder
     print("Fetching dataset...")

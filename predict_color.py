@@ -1,9 +1,7 @@
-# import the necessary packages
 import os
 from glob import glob
 import random
 from numpy.core._multiarray_umath import ndarray
-
 import cv2
 import sys
 stderr = sys.stderr
@@ -11,25 +9,24 @@ sys.stderr = open(os.devnull, 'w')
 import keras.backend as K
 sys.stderr = stderr
 import numpy as np
-import sklearn.neighbors as nn
-
-from config import img_rows, img_cols, data_dir, T, imgs_dir, nb_neighbors
+from config import img_rows, img_cols, data_dir, T, imgs_dir
 from model import build_model
+from utils import clear_folder
 
 
 def main():
-    channel: int = 3
-    epsilon: float = 1e-8
-
-    # Pick the latest weights. Only improved models are saved (latest = best loss)
+    # ------------------------------------------------------
+    # Run predictor on some validation images
+    # ------------------------------------------------------
+    # Latest model is loaded, as only improvements are saved
     model_weights_path: str = max(glob('models/*.hdf5'), key=os.path.getctime)
     model = build_model()
     model.load_weights(model_weights_path)
 
     print(model.summary())
 
-    image_folder: str = imgs_dir[1:]
-    names_file: str = 'image_names/valid_names.txt'  # TODO: try on train
+    image_folder: str = imgs_dir
+    names_file: str = 'image_names/valid_names.txt'
     with open(names_file, 'r') as f:
         names = f.read().splitlines()
     # Pick 10 samples from validation set
@@ -41,24 +38,15 @@ def main():
     q_ab: ndarray = np.load(os.path.join(data_dir, "lab_gamut.npy"))
     nb_q: int = q_ab.shape[0]
 
-    # Fit a NN to q_ab
-    nn_finder = nn.NearestNeighbors(n_neighbors=nb_neighbors, algorithm='ball_tree').fit(q_ab)
+    clear_folder('output_images')
 
-    # Clear folder
-    for the_file in os.listdir('output_images'):
-        file_path = os.path.join('output_images', the_file)
-        try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-            # elif os.path.isdir(file_path): shutil.rmtree(file_path)
-        except Exception as e:
-            print(e)
-
-    print("Using model" + model_weights_path)
+    print("----------------------------------------\n"
+          "Prediction based on " + model_weights_path[7:] + "\n"
+          "----------------------------------------")
     for i in range(len(samples)):
         image_name = samples[i]
         filename = os.path.join(image_folder, image_name)
-        print('Start processing image: {}'.format(filename))
+        print('Processing image: {}'.format(filename[16:]))
         # b: 0 <=b<=255, g: 0 <=g<=255, r: 0 <=r<=255.
         bgr = cv2.imread(filename)
         gray = cv2.imread(filename, 0)
@@ -72,12 +60,15 @@ def main():
         x_test[0, :, :, 0] = gray / 255.
 
         # L: 0 <=L<= 255, a: 42 <=a<= 226, b: 20 <=b<= 223.
-        # --- Prediction ---
+        # ------------------------------------------------------
+        # --------------------- Prediction ---------------------
+        # ------------------------------------------------------
         X_colorized = model.predict(x_test)
         X_colorized = X_colorized.reshape((height * width, nb_q))
 
         # Reweight probabilities; epsilon avoids 0/NaN errors
         # Formula (5) @paper
+        epsilon: float = 1e-8
         X_colorized = np.exp(np.log(X_colorized + epsilon) / T)
         X_colorized = X_colorized / np.sum(X_colorized, 1)[:, np.newaxis]
 

@@ -8,7 +8,8 @@ kernel_size = 3
 num_colors = 313
 # directories
 data_dir = 'data/'
-imgs_dir = '/dataset/dataset'
+imgs_dir = 'dataset/dataset'
+checkpoint_models_path = 'models/'
 # Parameters for random dataset generation from imagenet
 train_set_dim = 1024  # mb
 prior_sample_size = 1000
@@ -17,8 +18,10 @@ prior_sample_size = 1000
 nb_neighbors = 5
 
 # Training parameters
+fmt = '.jpeg'
 # he normal = truncated normal distribution centered on 0
 layer_init = 'he_normal'
+save_period = 10
 patience = 50
 epochs = 1000
 learning_rate = 0.001
