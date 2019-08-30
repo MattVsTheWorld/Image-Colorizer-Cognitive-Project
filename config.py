@@ -17,6 +17,8 @@ prior_sample_size = 1000
 nb_neighbors = 5
 
 # Training parameters
+# he normal = truncated normal distribution centered on 0
+layer_init = 'he_normal'
 patience = 50
 epochs = 1000
 learning_rate = 0.001
