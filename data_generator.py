@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import sklearn.neighbors as nn
 import sys
+# Silence unwanted warnings
 stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w')
 from keras.utils import Sequence
@@ -10,21 +11,24 @@ sys.stderr = stderr
 from config import percentage_training, batch_size, img_rows, img_cols, imgs_dir, train_set_dim, nb_neighbors
 import random
 from tqdm import tqdm
-
+from glob import glob
+import shutil
 
 
 def get_soft_encoding(image_ab, nn_finder, num_q):
-    # take shape of first two
+    # ------------------------------------------------------
+    # Obtain a soft encoding of the ground truth
+    # This is used as to compare the color distribution predicted
+    # ------------------------------------------------------
     height, width = image_ab.shape[:2]
 
     # flatten ndarray of the two channels
     a = np.ravel(image_ab[:, :, 0])
     b = np.ravel(image_ab[:, :, 1])
-    # Metti a fianco
     ab = np.vstack((a, b)).T
     # Get the distance to and the idx of the nearest neighbors (of the color gamut)
     dist_neigh, idx_neigh = nn_finder.kneighbors(ab)
-    # Smooooooth weights with gaussian kernel
+    # Smooth weights with gaussian kernel
     sigma = 5
     weights = np.exp(-dist_neigh ** 2 / (2 * sigma ** 2))
     weights = weights / np.sum(weights, axis=1)[:, np.newaxis]
@@ -45,6 +49,9 @@ def get_soft_encoding(image_ab, nn_finder, num_q):
 
 
 class DataGenSequence(Sequence):
+    # ------------------------------------------------------
+    # Data generation class. Handles creation of batches and their fetching for training
+    # ------------------------------------------------------
     def __init__(self, usage, image_folder):
         # Train or validation
         self.usage = usage
@@ -65,8 +72,6 @@ class DataGenSequence(Sequence):
         self.num_q = q_ab.shape[0]
 
         # Fit a NN to q_ab
-        # q_ab.reshape(-1, 1)
-        # q_ab = [q_ab]
         self.nn_finder = nn.NearestNeighbors(algorithm='ball_tree').fit(q_ab)
 
     def __len__(self):
@@ -74,6 +79,9 @@ class DataGenSequence(Sequence):
         return int(np.ceil(len(self.names) / float(batch_size)))
 
     def __getitem__(self, idx):
+        # ------------------------------------------------------
+        # return a batch (train + truth)
+        # ------------------------------------------------------
         # First element of the batch
         i = idx * batch_size
 
@@ -100,6 +108,7 @@ class DataGenSequence(Sequence):
             # rows, columns, L a b; skip L
             out_ab = out_lab[:, :, 1:].astype(np.int32) - 128
 
+            # The comparable ground truth is based on the soft encoding of the actual truth
             y = get_soft_encoding(out_ab, self.nn_finder, self.num_q)
 
             if np.random.random_sample() > 0.5:
@@ -113,7 +122,6 @@ class DataGenSequence(Sequence):
 
             i += 1
 
-        # print(batch_y.shape)
         return batch_x, batch_y
 
     def on_epoch_end(self):
@@ -129,9 +137,13 @@ def valid_gen(image_folder):
 
 
 def split_data(image_folder, fmt):
+    # ------------------------------------------------------
+    # Split a folder of images into training and validation data (percentage specified in config)
+    # Validation data is not used for training, but is used to validate loss value
+    # ------------------------------------------------------
     names = [f for f in os.listdir(image_folder[1:]) if f.lower().endswith(fmt)]
     # Number of samples
-    num_samples = len(names)           # 2601
+    num_samples = len(names)
     print('num_samples: ' + str(num_samples))
 
     # Number of train/validation images
@@ -159,11 +171,11 @@ def split_data(image_folder, fmt):
         file.write(str(num_train_samples))
 
 
-from glob import glob
-import shutil
-
-
 def generate_dataset():
+    # ------------------------------------------------------
+    # Generate a folder of images randomly chosen from the imagenet dataset
+    # Images are generated up to a certain folder dimension (specified in mb)
+    # ------------------------------------------------------
     source_folder = 'imagenet/ILSVRC2017_CLS-LOC/ILSVRC/Data/CLS-LOC/train'
     destination_folder = 'generated_dataset'
     folder_list = next(os.walk(source_folder))[1]
@@ -175,7 +187,6 @@ def generate_dataset():
         try:
             if os.path.isfile(file_path):
                 os.unlink(file_path)
-            # elif os.path.isdir(file_path): shutil.rmtree(file_path)
         except Exception as e:
             print(e)
     print("\nDone")
@@ -185,7 +196,6 @@ def generate_dataset():
     total_size = 0     # current byte size of folder
     print("Fetching dataset...")
     pbar = tqdm(total=train_set_dim)
-    # TODO: moved
     while total_size < (train_set_dim * 2**20):
         chosen_one = random.choice(folder_list)
         img_path = random.choice(glob(source_folder + '/' + chosen_one + '/*.jpeg'))
