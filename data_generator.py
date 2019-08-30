@@ -7,11 +7,9 @@ stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w')
 from keras.utils import Sequence
 sys.stderr = stderr
-from trainer.config import percentage_training, batch_size, img_rows, img_cols, imgs_dir, train_set_dim, nb_neighbors
-from math import floor
-from tensorflow.python.lib.io import file_io
-from google.cloud import storage
-from trainer.image_pickler import gcs_npy_unpickler
+from config import percentage_training, batch_size, img_rows, img_cols, imgs_dir, train_set_dim, nb_neighbors
+import random
+from tqdm import tqdm
 
 
 
@@ -47,66 +45,61 @@ def get_soft_encoding(image_ab, nn_finder, num_q):
 
 
 class DataGenSequence(Sequence):
-    def __init__(self, usage, images):
+    def __init__(self, usage, image_folder):
         # Train or validation
         self.usage = usage
-        self.images = images
+        self.image_folder = image_folder
 
         if usage == 'train':
-            self.num_img = percentage_training
+            names_file = 'image_names/train_names.txt'
         else:
-            self.num_img = 1 - percentage_training
-            self.images = list(reversed(self.images))
+            names_file = 'image_names/valid_names.txt'
 
-        self.upper_bound = int(floor(len(self.images) * self.num_img))
-        self.images = self.images[:self.upper_bound]
+        with open(names_file, 'r') as f:
+            self.names = f.read().splitlines()
 
-        np.random.shuffle(self.images)
+        # np.random.shuffle(self.names)
+
         # Load the array of quantized ab value
-
-        q_ab = gcs_npy_unpickler('pts_in_hull.pickle')
-
+        q_ab = np.load("data/lab_gamut.npy")
         self.num_q = q_ab.shape[0]
 
         # Fit a NN to q_ab
-        self.nn_finder = nn.NearestNeighbors(n_neighbors=nb_neighbors, algorithm='ball_tree').fit(q_ab)
+        # q_ab.reshape(-1, 1)
+        # q_ab = [q_ab]
+        self.nn_finder = nn.NearestNeighbors(algorithm='ball_tree').fit(q_ab)
 
     def __len__(self):
         # Number of batches
-        return int(np.ceil(len(self.images) / float(batch_size)))
+        return int(np.ceil(len(self.names) / float(batch_size)))
 
     def __getitem__(self, idx):
-
         # First element of the batch
         i = idx * batch_size
 
         out_img_rows, out_img_cols = img_rows // 4, img_cols // 4
         # Batch is either full or partial (last batch)
-        length = min(batch_size, (len(self.images) - i))
+        length = min(batch_size, (len(self.names) - i))
 
         # e.g. shape= (32, 256, 256, 1)
         batch_x = np.empty((length, img_rows, img_cols, 1), dtype=np.float32)
         # e.g. shape= (32, 64, 64, 313)
         batch_y = np.empty((length, out_img_rows, out_img_cols, self.num_q), dtype=np.float32)
-        # TODO: remove
-        # np.set_printoptions(threshold=sys.maxsize)
+        np.set_printoptions(threshold=sys.maxsize)
         for i_batch in range(length):
-            bgr = cv2.resize(self.images[i], (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
-            # cv2.imshow('lol', bgr)
-            # cv2.waitKey()
-
-            gray = cv2.resize(cv2.cvtColor(self.images[i], cv2.COLOR_BGR2GRAY), (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
-
+            name = self.names[i]
+            filename = os.path.join(self.image_folder, name)
+            # b: 0 <=b<=255, g: 0 <=g<=255, r: 0 <=r<=255.
+            bgr = cv2.resize(cv2.imread(filename), (img_rows, img_cols))
+            gray = cv2.resize(cv2.imread(filename, cv2.IMREAD_GRAYSCALE), (img_rows, img_cols))
             lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
+            # Normalize
             x = gray / 255.
 
             out_lab = cv2.resize(lab, (out_img_rows, out_img_cols), interpolation=cv2.INTER_CUBIC)
             # rows, columns, L a b; skip L
-            # Before: 42 <=a<= 226, 20 <=b<= 223
-            # After: -86 <=a<= 98, -108 <=b<= 95
             out_ab = out_lab[:, :, 1:].astype(np.int32) - 128
-            # TODO: remove
-            # print(out_ab)
+
             y = get_soft_encoding(out_ab, self.nn_finder, self.num_q)
 
             if np.random.random_sample() > 0.5:
@@ -124,34 +117,34 @@ class DataGenSequence(Sequence):
         return batch_x, batch_y
 
     def on_epoch_end(self):
-        np.random.shuffle(self.images)
+        np.random.shuffle(self.names)
 
 
-def train_gen(images):
-    return DataGenSequence('train', images)
+def train_gen(image_folder):
+    return DataGenSequence('train', image_folder)
 
 
-def valid_gen(images):
-    return DataGenSequence('valid', images)
+def valid_gen(image_folder):
+    return DataGenSequence('valid', image_folder)
 
-'''
-def split_data(image_folder: str, fmt: str):
-    names: List[str] = [f for f in os.listdir(image_folder) if f.lower().endswith(fmt)]
+
+def split_data(image_folder, fmt):
+    names = [f for f in os.listdir(image_folder[1:]) if f.lower().endswith(fmt)]
     # Number of samples
-    num_samples: int = len(names)
+    num_samples = len(names)           # 2601
     print('num_samples: ' + str(num_samples))
 
     # Number of train/validation images
-    num_train_samples: int = int(num_samples * percentage_training)
+    num_train_samples = int(num_samples * percentage_training)
     print('num_train_samples: ' + str(num_train_samples))
-    num_valid_samples: int = num_samples - num_train_samples
+    num_valid_samples = num_samples - num_train_samples
     print('num_valid_samples: ' + str(num_valid_samples))
 
     # Pick random validation file names
     valid_names = random.sample(names, num_valid_samples)
     train_names = [n for n in names if n not in valid_names]
-    shuffle(valid_names)
-    shuffle(train_names)
+    # shuffle(valid_names)
+    # shuffle(train_names)
 
     with open('image_names/valid_names.txt', 'w') as file:
         file.write('\n'.join(valid_names))
@@ -164,56 +157,52 @@ def split_data(image_folder: str, fmt: str):
 
     with open('image_names/train_num.txt', 'w') as file:
         file.write(str(num_train_samples))
-'''
-#
-# from tqdm import tqdm
-# import random
-# from glob import glob
-# import shutil
-#
-#
-# def generate_dataset():
-#     source_folder = os.pardir + '/imagenet/ILSVRC2017_CLS-LOC/ILSVRC/Data/CLS-LOC/train'
-#     destination_folder = os.pardir + imgs_dir
-#     folder_list = next(os.walk(source_folder))[1]
-#
-#     # Clear folder
-#     print("Clearing folder...")
-#     for the_file in tqdm(os.listdir(destination_folder)):
-#         file_path = os.path.join(destination_folder, the_file)
-#         try:
-#             if os.path.isfile(file_path):
-#                 os.unlink(file_path)
-#             # elif os.path.isdir(file_path): shutil.rmtree(file_path)
-#         except Exception as e:
-#             print(e)
-#     print("\nDone")
-#
-#     # avg size of img = 200kb
-#     # print("Fetching images", sep=' ', end='')
-#     total_size: int = 0     # current byte size of folder
-#     print("Fetching dataset...")
-#     pbar = tqdm(total=train_set_dim)
-#     # TODO: moved
-#
-#     while total_size < (train_set_dim * 2**20):
-#         chosen_one = random.choice(folder_list)
-#         img_path = random.choice(glob(source_folder + '/' + chosen_one + '/*.jpeg'))
-#         size = os.path.getsize(img_path)
-#         total_size += size
-#         pbar.update(size / 2**20)
-#         shutil.copy(img_path, destination_folder)
-#     pbar.close()
-#     print("\nDone")
-#
-#
+
+
+from glob import glob
+import shutil
+
+
+def generate_dataset():
+    source_folder = 'imagenet/ILSVRC2017_CLS-LOC/ILSVRC/Data/CLS-LOC/train'
+    destination_folder = 'generated_dataset'
+    folder_list = next(os.walk(source_folder))[1]
+
+    # Clear folder
+    print("Clearing folder...")
+    for the_file in tqdm(os.listdir(destination_folder)):
+        file_path = os.path.join(destination_folder, the_file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+            # elif os.path.isdir(file_path): shutil.rmtree(file_path)
+        except Exception as e:
+            print(e)
+    print("\nDone")
+
+    # avg size of img = 200kb
+    # print("Fetching images", sep=' ', end='')
+    total_size = 0     # current byte size of folder
+    print("Fetching dataset...")
+    pbar = tqdm(total=train_set_dim)
+    # TODO: moved
+    while total_size < (train_set_dim * 2**20):
+        chosen_one = random.choice(folder_list)
+        img_path = random.choice(glob(source_folder + '/' + chosen_one + '/*.jpeg'))
+        size = os.path.getsize(img_path)
+        total_size += size
+        pbar.update(size / 2**20)
+        shutil.copy(img_path, destination_folder)
+    pbar.close()
+    print("\nDone")
+
+
 def main():
-     #generate_dataset()
-     # image_folder: str = os.pardir + imgs_dir
-     # fmt: str = '.jpeg'
-     q_ab = np.load(os.path.join('data/', "pts_in_hull.npy"))
-     print(q_ab)
-     # 'split_data(image_folder, fmt)'
+    generate_dataset()
+    image_folder = os.pardir + imgs_dir
+    fmt = '.jpeg'
+    split_data(image_folder, fmt)
+
 
 if __name__ == '__main__':
-     main()
+    main()

@@ -13,8 +13,8 @@ sys.stderr = stderr
 import numpy as np
 import sklearn.neighbors as nn
 
-from trainer.config import img_rows, img_cols, data_dir, T, imgs_dir, nb_neighbors
-from trainer.model import build_model
+from config import img_rows, img_cols, data_dir, T, imgs_dir, nb_neighbors
+from model import build_model
 
 
 def main():
@@ -28,7 +28,7 @@ def main():
 
     print(model.summary())
 
-    image_folder: str = os.pardir + imgs_dir
+    image_folder: str = imgs_dir[1:]
     names_file: str = 'image_names/valid_names.txt'  # TODO: try on train
     with open(names_file, 'r') as f:
         names = f.read().splitlines()
@@ -38,7 +38,7 @@ def main():
     height, width = img_rows // 4, img_cols // 4
 
     # Load the array of quantized ab value
-    q_ab: ndarray = np.load(os.path.join(data_dir, "pts_in_hull.npy"))
+    q_ab: ndarray = np.load(os.path.join(data_dir, "lab_gamut.npy"))
     nb_q: int = q_ab.shape[0]
 
     # Fit a NN to q_ab
@@ -62,8 +62,8 @@ def main():
         # b: 0 <=b<=255, g: 0 <=g<=255, r: 0 <=r<=255.
         bgr = cv2.imread(filename)
         gray = cv2.imread(filename, 0)
-        bgr = cv2.resize(bgr, (img_rows, img_cols), cv2.INTER_CUBIC)
-        gray = cv2.resize(gray, (img_rows, img_cols), cv2.INTER_CUBIC)
+        bgr = cv2.resize(bgr, (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
+        gray = cv2.resize(gray, (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
 
         # L: 0 <=L<= 255, a: 42 <=a<= 226, b: 20 <=b<= 223.
         lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
@@ -90,8 +90,8 @@ def main():
         X_a = np.sum(X_colorized * q_a, 1).reshape((height, width))
         X_b = np.sum(X_colorized * q_b, 1).reshape((height, width))
 
-        X_a = cv2.resize(X_a, (img_rows, img_cols), cv2.INTER_CUBIC)
-        X_b = cv2.resize(X_b, (img_rows, img_cols), cv2.INTER_CUBIC)
+        X_a = cv2.resize(X_a, (img_rows, img_cols), interpolation= cv2.INTER_CUBIC)
+        X_b = cv2.resize(X_b, (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
 
         # Before: -90 <=a<= 100, -110 <=b<= 110
         # After: 38 <=a<= 228, 18 <=b<= 238

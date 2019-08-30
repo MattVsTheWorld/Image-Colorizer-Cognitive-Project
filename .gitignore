@@ -11,8 +11,8 @@ venv/
 src/__pycache__/
 src/logs/
 src/models/
-src/data/
-src/image_names/
+data/
+image_names/
 /test_imgs/bird/
 src/images.pickle
 *.pyc
