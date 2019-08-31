@@ -19,32 +19,32 @@ def main():
     # Run predictor on some validation images
     # ------------------------------------------------------
     # Latest model is loaded, as only improvements are saved
-    model_weights_path: str = max(glob('models/*.hdf5'), key=os.path.getctime)
+    model_weights_path = max(glob('models/*.hdf5'), key=os.path.getctime)
     model = build_model()
     model.load_weights(model_weights_path)
 
     print(model.summary())
 
-    image_folder: str = imgs_dir
-    names_file: str = 'image_names/valid_names.txt'
-    with open(names_file, 'r') as f:
-        names = f.read().splitlines()
+    image_folder = 'test_images/'
+    fmt = 'jpg'
+    names = [f for f in os.listdir(image_folder) if f.lower().endswith(fmt)]
+
     # Pick 10 samples from validation set
-    samples = random.sample(names, 10)
+    # samples = random.sample(names, 10)
 
     height, width = img_rows // 4, img_cols // 4
 
     # Load the array of quantized ab value
-    q_ab: ndarray = np.load(os.path.join(data_dir, "lab_gamut.npy"))
-    nb_q: int = q_ab.shape[0]
+    q_ab = np.load(os.path.join(data_dir, "lab_gamut.npy"))
+    nb_q = q_ab.shape[0]
 
     clear_folder('output_images')
 
     print("----------------------------------------\n"
           "Prediction based on " + model_weights_path[7:] + "\n"
           "----------------------------------------")
-    for i in range(len(samples)):
-        image_name = samples[i]
+    for i in range(len(names)):
+        image_name = names[i]
         filename = os.path.join(image_folder, image_name)
         print('Processing image: {}'.format(filename[16:]))
         # b: 0 <=b<=255, g: 0 <=g<=255, r: 0 <=r<=255.
@@ -68,7 +68,7 @@ def main():
 
         # Reweight probabilities; epsilon avoids 0/NaN errors
         # Formula (5) @paper
-        epsilon: float = 1e-8
+        epsilon = 1e-8
         X_colorized = np.exp(np.log(X_colorized + epsilon) / T)
         X_colorized = X_colorized / np.sum(X_colorized, 1)[:, np.newaxis]
 

@@ -8,7 +8,7 @@ kernel_size = 3
 num_colors = 313
 # directories
 data_dir = 'data/'
-imgs_dir = 'dataset/dataset'
+imgs_dir = 'dataset/'
 checkpoint_models_path = 'models/'
 # Parameters for random dataset generation from imagenet
 train_set_dim = 1024  # mb
@@ -25,4 +25,4 @@ save_period = 10
 patience = 50
 epochs = 1000
 learning_rate = 0.001
-T = 0.38
+T = 1
