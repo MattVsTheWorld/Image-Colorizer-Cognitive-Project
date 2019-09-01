@@ -165,7 +165,7 @@ def build_model(batchnorm):
 
 def main():
 
-    encoder_decoder = build_model()
+    encoder_decoder = build_model(batchnorm=False)
     # Print specifics
     print(encoder_decoder.summary())
     plot_model(encoder_decoder, to_file='encoder_decoder.svg', show_layer_names=True, show_shapes=True)

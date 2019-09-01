@@ -80,8 +80,7 @@ def main():
 
     print(model_1.summary())
 
-    names = [f for f in os.listdir(imgs_dir
-                                   ) if f.lower().endswith(fmt)]
+    names = [f for f in os.listdir('test_imgs') if f.lower().endswith('.jpg')]
 
     # Pick 10 samples from validation set
     # samples = random.sample(names, 10)
@@ -103,7 +102,7 @@ def main():
 
     for i in range(len(names)):
         image_name = names[i]
-        filename = os.path.join(imgs_dir, image_name)
+        filename = os.path.join('test_imgs', image_name)
         print('Processing image: {}'.format(filename[16:]))
         # b: 0 <=b<=255, g: 0 <=g<=255, r: 0 <=r<=255.
         bgr = cv2.imread(filename)
