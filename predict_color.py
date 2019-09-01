@@ -73,7 +73,7 @@ def main():
     model_1_weights_path = max(glob('models/*.hdf5'), key=os.path.getctime)
     model_2_weights_path = min(glob('models/*.hdf5'), key=os.path.getctime)
 
-    model_1 = build_model(True)
+    model_1 = build_model(False)
     model_2 = build_model(False)
     model_1.load_weights(model_1_weights_path)
     model_2.load_weights(model_2_weights_path)
@@ -96,8 +96,8 @@ def main():
     clear_folder('output_images')
 
     print("----------------------------------------\n"
-          "Prediction 1 based on " + model_1_weights_path[7:] + "\n"
-          "Prediction 2 based on " + model_2_weights_path[7:] + "\n"
+          "Prediction '1' based on " + model_1_weights_path[7:] + "\n"
+          "Prediction '2' based on " + model_2_weights_path[7:] + "\n"
           "----------------------------------------")
 
     for i in range(len(names)):
@@ -121,8 +121,8 @@ def main():
 
         # cv2.imwrite('output_images/{}_bw.png'.format(i), gray)
         cv2.imwrite('output_images/{}_gt.png'.format(i), bgr)
-        cv2.imwrite('output_images/{}_out_1.png'.format(i), out_bgr_1)
-        cv2.imwrite('output_images/{}_out_2.png'.format(i), out_bgr_2)
+        cv2.imwrite('output_images/{}_1.png'.format(i), out_bgr_1)
+        cv2.imwrite('output_images/{}_2.png'.format(i), out_bgr_2)
 
     K.clear_session()
 

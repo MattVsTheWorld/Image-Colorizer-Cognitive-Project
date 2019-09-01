@@ -2,7 +2,7 @@
 percentage_training = 0.9
 # Input parameters
 batch_size = 128
-img_rows, img_cols = 112, 112
+img_rows, img_cols = 128, 128
 kernel_size = 3
 # Number of colors in color space
 num_colors = 313
@@ -23,5 +23,5 @@ layer_init = 'he_normal'
 save_period = 10
 patience = 50
 epochs = 1000
-learning_rate = 0.001
-T = 1
+learning_rate = 0.0001
+T = 0.1
