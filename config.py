@@ -2,13 +2,13 @@
 percentage_training = 0.9
 # Input parameters
 batch_size = 128
-img_rows, img_cols = 224, 224
+img_rows, img_cols = 112, 112
 kernel_size = 3
 # Number of colors in color space
 num_colors = 313
 # directories
 data_dir = 'data/'
-imgs_dir = 'dataset/dataset'
+imgs_dir = 'generated_dataset/generated_dataset'
 checkpoint_models_path = 'models/'
 # Parameters for random dataset generation from imagenet
 train_set_dim = 1024  # mb

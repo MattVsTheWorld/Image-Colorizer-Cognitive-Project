@@ -19,7 +19,7 @@ def load_data(size, image_folder=os.pardir + '/' + imgs_dir):
     # """
     names = [f for f in os.listdir(image_folder) if f.lower().endswith(fmt)]
     np.random.shuffle(names)
-    num_samples = len(names) # // 5  # prior_sample_size
+    num_samples = len(names)  # // 5  # prior_sample_size
     print("Creating prior based on " + str(num_samples) + " images")
     X_ab = np.empty((num_samples, size, size, 2))
     # Take the first num_samples (shuffled) images

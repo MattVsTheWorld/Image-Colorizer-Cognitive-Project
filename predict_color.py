@@ -9,9 +9,11 @@ sys.stderr = open(os.devnull, 'w')
 import keras.backend as K
 sys.stderr = stderr
 import numpy as np
-from config import img_rows, img_cols, data_dir, T, imgs_dir
+from config import img_rows, img_cols, data_dir, T, imgs_dir, fmt
 from model import build_model
 from utils import clear_folder
+import tensorflow as tf
+
 
 def colorize(model, x_test, height, width, nb_q, q_ab, lab):
     # L: 0 <=L<= 255, a: 42 <=a<= 226, b: 20 <=b<= 223.
@@ -55,10 +57,18 @@ def colorize(model, x_test, height, width, nb_q, q_ab, lab):
     out_bgr = out_bgr.astype(np.uint8)
     return out_bgr
 
+
 def main():
     # ------------------------------------------------------
     # Run predictor on some validation images
     # ------------------------------------------------------
+    # Toggle to force prediction on cpu (if gpu is busy)
+    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+    if tf.test.gpu_device_name():
+        print('GPU found')
+    else:
+        print("No GPU found")
+
     # Latest model is loaded, as only improvements are saved
     model_1_weights_path = max(glob('models/*.hdf5'), key=os.path.getctime)
     model_2_weights_path = min(glob('models/*.hdf5'), key=os.path.getctime)
@@ -70,9 +80,8 @@ def main():
 
     print(model_1.summary())
 
-    image_folder = 'test_images/'
-    fmt = 'jpg'
-    names = [f for f in os.listdir(image_folder) if f.lower().endswith(fmt)]
+    names = [f for f in os.listdir(imgs_dir
+                                   ) if f.lower().endswith(fmt)]
 
     # Pick 10 samples from validation set
     # samples = random.sample(names, 10)
@@ -91,9 +100,10 @@ def main():
           "Prediction 1 based on " + model_1_weights_path[7:] + "\n"
           "Prediction 2 based on " + model_2_weights_path[7:] + "\n"
           "----------------------------------------")
+
     for i in range(len(names)):
         image_name = names[i]
-        filename = os.path.join(image_folder, image_name)
+        filename = os.path.join(imgs_dir, image_name)
         print('Processing image: {}'.format(filename[16:]))
         # b: 0 <=b<=255, g: 0 <=g<=255, r: 0 <=r<=255.
         bgr = cv2.imread(filename)

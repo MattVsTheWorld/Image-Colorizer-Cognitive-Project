@@ -29,8 +29,10 @@ def main():
     # ---------------------- Optimizer ---------------------
     # ------------------------------------------------------
     new_model = build_model()
-    sgd = keras.optimizers.SGD(lr=learning_rate, momentum=0.9, nesterov=True, clipnorm=5.)
-    new_model.compile(optimizer=sgd, loss='categorical_crossentropy')
+
+    # sgd = keras.optimizers.SGD(lr=learning_rate, momentum=0.9, nesterov=True, clipnorm=5.)
+    # new_model.compile(optimizer=sgd, loss='categorical_crossentropy')
+    new_model.compile(optimizer=keras.optimizers.Adam(lr=0.001), loss='categorical_crossentropy')
 
     # -----------
     # opt = keras.optimizers.Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
