@@ -8,7 +8,7 @@ kernel_size = 3
 num_colors = 313
 # directories
 data_dir = 'data/'
-imgs_dir = 'dataset/'
+imgs_dir = 'dataset/dataset'
 checkpoint_models_path = 'models/'
 # Parameters for random dataset generation from imagenet
 train_set_dim = 1024  # mb

@@ -11,8 +11,11 @@ venv/
 src/__pycache__/
 src/logs/
 src/models/
-data/
+data/prior_prob_smoothed.npy
+data/prior_factor.npy
+data/prior_probability.npy
 image_names/
 /test_imgs/bird/
 src/images.pickle
+_legacy/1_Deprecated version/trainer/data
 *.pyc
