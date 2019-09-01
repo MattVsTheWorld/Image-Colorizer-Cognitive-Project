@@ -2,7 +2,7 @@
 percentage_training = 0.9
 # Input parameters
 batch_size = 128
-img_rows, img_cols = 256, 256
+img_rows, img_cols = 224, 224
 kernel_size = 3
 # Number of colors in color space
 num_colors = 313
@@ -24,4 +24,4 @@ save_period = 10
 patience = 50
 epochs = 1000
 learning_rate = 0.001
-T = 0.38
+T = 1
