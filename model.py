@@ -15,7 +15,7 @@ from config import img_rows, img_cols, num_colors, kernel_size
 from config import layer_init as kernel_init
 
 
-def build_model():
+def build_model(batchnorm):
     tf.logging.set_verbosity(tf.logging.ERROR)
     # Initialize l2 regulator from keras
     l2_reg = l2(1e-3)
@@ -146,7 +146,8 @@ def build_model():
     x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
                name='conv8_3', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
-    x = BatchNormalization()(x)
+    if batchnorm:
+        x = BatchNormalization()(x)
 
     outputs = Conv2D(num_colors, (1, 1), activation='softmax', padding='same', name='pred')(x)
     model = Model(inputs=input_tensor, outputs=outputs, name="ColorNet")
