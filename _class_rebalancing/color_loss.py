@@ -19,6 +19,7 @@ def categorical_crossentropy_color(y_true, y_pred, precalc=True):
     # Use prior factor as calculated by Zhang et al in their paper
     else:
         prior_factor = np.load(os.path.join('data/', "prior_probs_zhang.npy")).astype(np.float32)
+
     weights = gather(prior_factor, idx_max)
     weights = reshape(weights, (-1, 1))
 
