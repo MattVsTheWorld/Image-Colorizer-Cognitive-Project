@@ -15,7 +15,7 @@ from config import img_rows, img_cols, num_colors, kernel_size
 from config import layer_init as kernel_init
 
 
-def build_model():
+def build_model(batchnorm):
     tf.logging.set_verbosity(tf.logging.ERROR)
     # Initialize l2 regulator from keras
     l2_reg = l2(1e-3)
@@ -152,6 +152,8 @@ def build_model():
     x = Conv2D(256, (kernel_size, kernel_size), activation='relu', padding='same',
                dilation_rate=1, name='conv8_3', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
+    if batchnorm:
+        x = BatchNormalization()(x)
 
     # x = BatchNormalization()(x)
 
