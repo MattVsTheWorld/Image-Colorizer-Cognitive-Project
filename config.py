@@ -23,5 +23,5 @@ layer_init = 'he_normal'
 save_period = 10
 patience = 50
 epochs = 1000
-learning_rate = 0.0001
+learning_rate = 3.16e-5
 T = 0.1

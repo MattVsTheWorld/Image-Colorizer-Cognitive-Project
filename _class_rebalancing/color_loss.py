@@ -2,6 +2,7 @@ from keras.backend import reshape, gather, argmax, categorical_crossentropy, mea
 import numpy as np
 import os
 from config import num_colors
+import tensorflow as tf
 
 
 def categorical_crossentropy_color(y_true, y_pred, precalc=True):
@@ -27,7 +28,7 @@ def categorical_crossentropy_color(y_true, y_pred, precalc=True):
     y_true = y_true * weights
 
     cross_ent = categorical_crossentropy(y_pred, y_true)
-    cross_ent = mean(cross_ent, axis=-1)
-    # cross_ent = sum(cross_ent, axis=-1)
+    # cross_ent = mean(cross_ent, axis=-1)
+    cross_ent = sum(cross_ent, axis=-1)
 
     return cross_ent

@@ -63,7 +63,7 @@ def main():
     # Run predictor on some validation images
     # ------------------------------------------------------
     # Toggle to force prediction on cpu (if gpu is busy)
-    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+    # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
     if tf.test.gpu_device_name():
         print('GPU found')
     else:
