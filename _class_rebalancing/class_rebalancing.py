@@ -9,7 +9,7 @@ from config import data_dir as abs_data_dir
 from tqdm import tqdm
 
 
-def load_data(size, image_folder=os.pardir + '/' + imgs_dir):
+def load_data(size, image_folder=imgs_dir):
     # """
     # Loads a sample of images
     # :param size: width/height to resize images to
@@ -19,7 +19,7 @@ def load_data(size, image_folder=os.pardir + '/' + imgs_dir):
     # """
     names = [f for f in os.listdir(image_folder) if f.lower().endswith(fmt)]
     np.random.shuffle(names)
-    num_samples = 1000 # len(names)  # // 5  # prior_sample_size
+    num_samples = len(names)  # // 5  # prior_sample_size
     print("Creating prior based on " + str(num_samples) + " images")
     X_ab = np.empty((num_samples, size, size, 2))
     # Take the first num_samples (shuffled) images
@@ -27,14 +27,14 @@ def load_data(size, image_folder=os.pardir + '/' + imgs_dir):
         name = names[i]
         filename = os.path.join(image_folder, name)
         bgr = cv2.imread(filename)
-        bgr = cv2.resize(bgr, (size, size), cv2.INTER_CUBIC)
+        bgr = cv2.resize(bgr, (size, size), interpolation=cv2.INTER_CUBIC)
         lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
         lab = lab.astype(np.int32)
         X_ab[i] = lab[:, :, 1:] - 128
     return X_ab
 
 
-def compute_color_prior(X_ab, data_dir=os.pardir + '/' + abs_data_dir):
+def compute_color_prior(X_ab, data_dir=abs_data_dir):
     # """
     # Calculate prior color probability of dataset
     # :param X_ab: Sample of images
@@ -69,7 +69,7 @@ def compute_color_prior(X_ab, data_dir=os.pardir + '/' + abs_data_dir):
     np.save(data_dir + "prior_probability.npy", prior_prob)
 
 
-def smooth_color_prior(sigma=5, data_dir=os.pardir + '/' + abs_data_dir):
+def smooth_color_prior(sigma=5, data_dir=abs_data_dir):
     """
     Smooth color probability with a gaussian window
     :param sigma: gaussian parameter
@@ -98,7 +98,7 @@ def smooth_color_prior(sigma=5, data_dir=os.pardir + '/' + abs_data_dir):
     np.save(os.path.join(data_dir, "prior_prob_smoothed.npy"), prior_prob_smoothed)
 
 
-def compute_prior_factor(gamma=0.5, alpha=1, data_dir=os.pardir + '/' + abs_data_dir):
+def compute_prior_factor(gamma=0.5, alpha=1, data_dir=abs_data_dir):
 
     prior_prob_smoothed = np.load(os.path.join(data_dir, "prior_prob_smoothed.npy"))
 
@@ -122,6 +122,7 @@ def main():
     compute_color_prior(X_ab)
     smooth_color_prior()
     compute_prior_factor()
+    print("Calculated color priors. Exiting...")
 
 
 if __name__ == '__main__':

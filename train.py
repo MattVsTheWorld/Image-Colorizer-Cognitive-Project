@@ -8,6 +8,7 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from config import patience, epochs, batch_size, learning_rate, imgs_dir, checkpoint_models_path, save_period, fmt
 from data_generator import train_gen, valid_gen, split_data
 from model import build_model
+from _class_rebalancing.color_loss import categorical_crossentropy_color
 
 
 def main():
@@ -28,9 +29,9 @@ def main():
     # ------------------------------------------------------
     # ---------------------- Optimizer ---------------------
     # ------------------------------------------------------
-    new_model = build_model()
-    opt = keras.optimizers.Adam(lr=learning_rate)
-    new_model.compile(optimizer=opt, loss='categorical_crossentropy')
+    new_model = build_model(batchnorm=False)
+    opt = keras.optimizers.Adam(lr=learning_rate)   # , decay=0.001)
+    new_model.compile(optimizer=opt, loss=categorical_crossentropy_color)
 
     # -----------
     # sgd = keras.optimizers.SGD(lr=learning_rate, momentum=0.9, nesterov=True, clipnorm=5.)
