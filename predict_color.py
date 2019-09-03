@@ -63,7 +63,7 @@ def main():
     model_1_weights_path = max(glob('models/*.hdf5'), key=os.path.getctime)
     model_2_weights_path = min(glob('models/*.hdf5'), key=os.path.getctime)
 
-    model_1 = build_model(True)
+    model_1 = build_model(False)
     model_2 = build_model(False)
     model_1.load_weights(model_1_weights_path)
     model_2.load_weights(model_2_weights_path)

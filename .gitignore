@@ -13,6 +13,6 @@ src/logs/
 src/models/
 data/
 image_names/
-/test_imgs/bird/
+/test_images/bird/
 src/images.pickle
 *.pyc

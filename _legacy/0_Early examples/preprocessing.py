@@ -73,13 +73,13 @@ def main():
     tf.enable_eager_execution()
 
     loader = ImageLoader(256)
-    # np_arr = loader.load_folder(os.pardir + '/test_imgs/a_subfolder')
+    # np_arr = loader.load_folder(os.pardir + '/test_images/a_subfolder')
     # for (imgc, imgbw) in np_arr:
     #     cv2.imshow('img', cv2.cvtColor(cv2.cvtColor(imgc, cv2.COLOR_Lab2BGR), cv2.COLOR_BGR2GRAY))
     #     cv2.waitKey()
     #     cv2.imshow('img', cv2.cvtColor(cv2.cvtColor(imgbw, cv2.COLOR_Lab2BGR), cv2.COLOR_BGR2GRAY))
     #     cv2.waitKey()
-    dataset = loader.create_dataset(os.pardir + '/test_imgs/a_subfolder')
+    dataset = loader.create_dataset(os.pardir + '/test_images/a_subfolder')
     for data, g_truth in dataset:
         print(data, g_truth)
 

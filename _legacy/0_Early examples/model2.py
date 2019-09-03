@@ -51,7 +51,7 @@ def get_batch(elements, size, index):
 
 def main():
 
-    mydir = os.pardir + '/test_imgs/bird'
+    mydir = os.pardir + '/test_images/bird'
     images = [files for files in os.listdir(mydir)]
     image_size = 64
     img_format = 'jpeg'
@@ -69,7 +69,7 @@ def main():
     '''
     num_train = N
     loader = ImageLoader(image_size, img_format)
-    _, data = loader.load_folder(os.pardir + '/test_imgs/bird', mp=True)
+    _, data = loader.load_folder(os.pardir + '/test_images/bird', mp=True)
     # normalization
     Xtrain = data[:num_train] * 1.0 / (image_size - 1)
     xt = Xtrain[:, :, :, 0]

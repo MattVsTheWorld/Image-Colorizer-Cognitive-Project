@@ -201,8 +201,8 @@ def run(tiles_num: int, win_map: int, map_size: int,
 
         # Training
         images: List[ndarray] = []
-        for filename in tqdm(os.listdir(os.pardir + "/test_imgs/bird")):
-            im: ndarray = cv2.cvtColor(cv2.imread(os.pardir + "/test_imgs/bird/" + filename), cv2.COLOR_BGR2RGB)
+        for filename in tqdm(os.listdir(os.pardir + "/test_images/bird")):
+            im: ndarray = cv2.cvtColor(cv2.imread(os.pardir + "/test_images/bird/" + filename), cv2.COLOR_BGR2RGB)
             im_lab: ndarray(dtype=float, shape=(256, 256, 3)) = color.rgb2lab(cv2.resize(im, (256, 256)))
             images.append(im_lab)
 

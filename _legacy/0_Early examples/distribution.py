@@ -11,7 +11,7 @@ matplotlib.interactive(True)
 # Number of discrete regions of LAB colorspace
 
 color_map = np.zeros((256, 256))
-mydir = os.pardir + '/test_imgs/bird'
+mydir = os.pardir + '/test_images/bird'
 
 for name in tqdm(os.listdir(mydir)):
     # print(name)

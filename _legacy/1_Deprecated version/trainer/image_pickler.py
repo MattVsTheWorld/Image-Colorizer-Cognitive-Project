@@ -51,7 +51,7 @@ def gcs_npy_unpickler(file_name):
 
 
 def main():
-    # image_pickler(os.pardir + '/test_imgs/flower', 'jpg')
+    # image_pickler(os.pardir + '/test_images/flower', 'jpg')
     # images = image_unpickler('images.pickle')
     #images = gcs_image_unpickler('ahah')
     #print(images)
