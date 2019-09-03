@@ -135,16 +135,17 @@ def build_model(batchnorm):
     # ----------------------------------------------------------------------------
     # ---------------------------------- Conv 8 ----------------------------------
     # ----------------------------------------------------------------------------
-    # x = Conv2DTranspose(128, (kernel_size+1, kernel_size+1), activation='relu', padding='same',
-    #                     dilation_rate=1, name='conv8_1', kernel_initializer=kernel_init,
-    #                     kernel_regularizer=l2_reg, strides=(2, 2))(x)
+    x = Conv2DTranspose(128, (kernel_size+1, kernel_size+1), activation='relu', padding='same',
+                        dilation_rate=1, name='conv8_1', kernel_initializer=kernel_init,
+                        kernel_regularizer=l2_reg, strides=(2, 2))(x)
     # TODO: test
     # UpSample before convolution
-    x = UpSampling2D(size=(2, 2))(x)
-    # Spacial resolution of output = 56
-    x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
-               dilation_rate=1, name='conv8_1', kernel_initializer=kernel_init,
-               kernel_regularizer=l2_reg, strides=(1, 1))(x)
+
+    # x = UpSampling2D(size=(2, 2))(x)
+    # # Spacial resolution of output = 56
+    # x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
+    #            dilation_rate=1, name='conv8_1', kernel_initializer=kernel_init,
+    #            kernel_regularizer=l2_reg, strides=(1, 1))(x)
     # / TODO: test
     x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
                dilation_rate=1, name='conv8_2', kernel_initializer=kernel_init,
