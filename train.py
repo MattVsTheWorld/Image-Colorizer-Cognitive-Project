@@ -31,7 +31,7 @@ def main():
     # ------------------------------------------------------
     new_model = build_model(batchnorm=False)
     opt = keras.optimizers.Adam(lr=learning_rate)   # , decay=0.001)
-    new_model.compile(optimizer=opt, loss=categorical_crossentropy_color)
+    new_model.compile(optimizer=opt, loss=categorical_crossentropy_color(precalc=False))
 
     # -----------
     # sgd = keras.optimizers.SGD(lr=learning_rate, momentum=0.9, nesterov=True, clipnorm=5.)

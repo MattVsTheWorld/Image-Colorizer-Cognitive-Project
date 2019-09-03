@@ -1,4 +1,4 @@
-from keras.backend import reshape, gather, argmax, categorical_crossentropy, mean, sum
+from keras.backend import reshape, gather, argmax, categorical_crossentropy, sparse_categorical_crossentropy, mean, sum
 import numpy as np
 import os
 from config import num_colors
@@ -27,8 +27,10 @@ def categorical_crossentropy_color(y_true, y_pred, precalc=True):
     # multiply y_true by weights
     y_true = y_true * weights
 
-    cross_ent = categorical_crossentropy(y_pred, y_true)
-    # cross_ent = mean(cross_ent, axis=-1)
-    cross_ent = sum(cross_ent, axis=-1)
+    cross_ent = categorical_crossentropy(y_true, y_pred)
+    cross_ent = mean(cross_ent, axis=-1)
+    # cross_ent = sum(cross_ent, axis=-1)
+
+    # cross_ent = categorical_crossentropy(y_true, y_pred)
 
     return cross_ent

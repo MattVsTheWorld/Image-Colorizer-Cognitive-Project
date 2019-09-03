@@ -122,6 +122,7 @@ def main():
     compute_color_prior(X_ab)
     smooth_color_prior()
     compute_prior_factor()
+    print("Calculated color priors. Exiting...")
 
 
 if __name__ == '__main__':
