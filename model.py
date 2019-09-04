@@ -6,7 +6,7 @@ sys.stderr = open(os.devnull, 'w')
 sys.stderr = stderr
 import keras.backend as K
 import tensorflow as tf
-from keras.layers import Input, Conv2D, BatchNormalization, Conv2DTranspose , UpSampling2D
+from keras.layers import Input, Conv2D, BatchNormalization, Conv2DTranspose, UpSampling2D
 from keras.models import Model
 from keras.regularizers import l2
 from keras.utils import plot_model
@@ -15,7 +15,7 @@ from config import img_rows, img_cols, num_colors, kernel_size
 from config import layer_init as kernel_init
 
 
-def build_model(batchnorm):
+def build_model():
     tf.logging.set_verbosity(tf.logging.ERROR)
     # Initialize l2 regulator from keras
     l2_reg = l2(1e-3)
@@ -135,26 +135,24 @@ def build_model(batchnorm):
     # ----------------------------------------------------------------------------
     # ---------------------------------- Conv 8 ----------------------------------
     # ----------------------------------------------------------------------------
-    x = Conv2DTranspose(128, (kernel_size+1, kernel_size+1), activation='relu', padding='same',
-                        dilation_rate=1, name='conv8_1', kernel_initializer=kernel_init,
-                        kernel_regularizer=l2_reg, strides=(2, 2))(x)
+    # TODO: test
+    # x = Conv2DTranspose(128, (kernel_size+1, kernel_size+1), activation='relu', padding='same',
+    #                     dilation_rate=1, name='conv8_1', kernel_initializer=kernel_init,
+    #                     kernel_regularizer=l2_reg, strides=(2, 2))(x)
     # TODO: test
     # UpSample before convolution
+    x = UpSampling2D(size=(2, 2))(x)
+    # Spacial resolution of output = 56
+    x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
+               dilation_rate=1, name='conv8_1', kernel_initializer=kernel_init,
+               kernel_regularizer=l2_reg, strides=(1, 1))(x)
 
-    # x = UpSampling2D(size=(2, 2))(x)
-    # # Spacial resolution of output = 56
-    # x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
-    #            dilation_rate=1, name='conv8_1', kernel_initializer=kernel_init,
-    #            kernel_regularizer=l2_reg, strides=(1, 1))(x)
-    # / TODO: test
     x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
                dilation_rate=1, name='conv8_2', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
     x = Conv2D(128, (kernel_size, kernel_size), activation='relu', padding='same',
                dilation_rate=1, name='conv8_3', kernel_initializer=kernel_init,
                kernel_regularizer=l2_reg, strides=(1, 1))(x)
-    if batchnorm:
-        x = BatchNormalization()(x)
 
     outputs = Conv2D(num_colors, (1, 1), activation='softmax', padding='same',
                      dilation_rate=1, name='conv8_313')(x)
@@ -164,7 +162,7 @@ def build_model(batchnorm):
 
 def main():
 
-    encoder_decoder = build_model(batchnorm=False)
+    encoder_decoder = build_model()
     # Print specifics
     print(encoder_decoder.summary())
     plot_model(encoder_decoder, to_file='encoder_decoder.svg', show_layer_names=True, show_shapes=True)

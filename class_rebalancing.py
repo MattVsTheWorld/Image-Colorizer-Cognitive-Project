@@ -4,9 +4,10 @@ import numpy as np
 import sklearn.neighbors as nn
 from scipy.interpolate import interp1d
 from scipy.signal import gaussian, convolve
-from config import imgs_dir, fmt
+from config import imgs_dir, fmt, num_colors
 from config import data_dir as abs_data_dir
 from tqdm import tqdm
+import matplotlib.pylab as plt
 
 
 def load_data(size, image_folder=imgs_dir):
@@ -31,6 +32,8 @@ def load_data(size, image_folder=imgs_dir):
         lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
         lab = lab.astype(np.int32)
         X_ab[i] = lab[:, :, 1:] - 128
+        # print("")
+    # shape = (num_images, rows, cols, channels[2])
     return X_ab
 
 
@@ -53,37 +56,37 @@ def compute_color_prior(X_ab, data_dir=abs_data_dir):
 
     # Count number of occurrences of each color
     idx = np.ravel(idx)
-    # Counts how many of each color is present (counting how many times their index is present)
-    counts = np.bincount(idx)
+
     # Only retain the indexes of colors that are represented
-    distribution = np.nonzero(counts)[0]
-
-    prior_prob = np.zeros((q_ab.shape[0]))
+    # elements are indices
+    # distribution = np.nonzero(counts)[0]
+    #
+    # prior_prob = np.zeros((q_ab.shape[0]))
     # for i in range(q_ab.shape[0]):  # TODO: seems dumb
-    prior_prob[distribution] = counts[distribution]
+    #     prior_prob[distribution] = counts[distribution]
 
+    # Counts how many of each color is present (counting how many times their index is present)
+    counts = np.bincount(idx, minlength=num_colors).astype(np.float32)
+    # Epsilon piccola a p i a c e r e (avoids 0 values/ NaN)
+    counts += 1E-6
     # Transform into probability
-    prior_prob = prior_prob / (1.0 * np.sum(prior_prob))
+    prior_prob = counts / (1.0 * np.sum(counts))
 
     # Save in data
     np.save(data_dir + "prior_probability.npy", prior_prob)
 
 
-def smooth_color_prior(sigma=5, data_dir=abs_data_dir):
+def smooth_color_prior(sigma=5, data_dir=abs_data_dir, file="prior_probability.npy"):
     """
     Smooth color probability with a gaussian window
     :param sigma: gaussian parameter
     """
-
-    prior_prob = np.load(os.path.join(data_dir, "prior_probability.npy"))
-    # Epsilon piccola a p i a c e r e (avoids 0 values/ NaN)
-    prior_prob += 1E-3 * np.min(prior_prob)
-    # Renormalize
-    prior_prob = prior_prob / (1.0 * np.sum(prior_prob))
+    prior_prob = np.load(os.path.join(data_dir, file))
 
     # Smooth with gaussian
     f = interp1d(np.arange(prior_prob.shape[0]), prior_prob)
     # create 1000 evenly spaced numbers [0,312]
+    # print(prior_prob.shape[0])
     x_coord = np.linspace(0, prior_prob.shape[0] - 1, 1000)
     y_coord = f(x_coord)
     # 2000 points in the window
@@ -97,15 +100,26 @@ def smooth_color_prior(sigma=5, data_dir=abs_data_dir):
     # Save
     np.save(os.path.join(data_dir, "prior_prob_smoothed.npy"), prior_prob_smoothed)
 
+    # Plot
+    # plt.yscale("log")
+    # plt.plot(prior_prob)
+    # plt.show()
+    # plt.yscale("log")
+    # plt.plot(prior_prob_smoothed, "g--")
+    # plt.show()
+    # plt.yscale("log")
+    # plt.plot(x_coord, smoothed, "r-")
+    # plt.show()
+
 
 def compute_prior_factor(gamma=0.5, alpha=1, data_dir=abs_data_dir):
-
+    # Todo: missing description (formula 4)
     prior_prob_smoothed = np.load(os.path.join(data_dir, "prior_prob_smoothed.npy"))
 
     uni_probs = np.ones_like(prior_prob_smoothed)
     uni_probs = uni_probs / np.sum(1.0 * uni_probs)
 
-    prior_factor = (1 - gamma) * prior_prob_smoothed + gamma * uni_probs
+    prior_factor = ((1 - gamma) * prior_prob_smoothed) + gamma * uni_probs
     prior_factor = np.power(prior_factor, -alpha)
 
     # renormalize
@@ -113,14 +127,27 @@ def compute_prior_factor(gamma=0.5, alpha=1, data_dir=abs_data_dir):
 
     np.save(os.path.join(data_dir, "prior_factor.npy"), prior_factor)
 
+    # # Plot
+    # plt.clf()
+    # plt.yscale("log")
+    # plt.plot(prior_prob_smoothed)
+    # plt.show()
+    # plt.yscale("log")
+    # plt.plot(prior_factor, "g--")
+    # plt.show()
+
 
 def main():
-    size = 64
-    # Load the sample of images
-    X_ab = load_data(size)
-    # Calculate prior probability of color
-    compute_color_prior(X_ab)
-    smooth_color_prior()
+    # --------------------------------------------------
+    # Optional: How to calculate prior probability
+    # size = 128
+    # # Load the sample of images
+    # X_ab = load_data(size)
+    # # Calculate prior probability of color
+    # compute_color_prior(X_ab)
+    # smooth_color_prior(file="prior_probability.npy")
+    # --------------------------------------------------
+    smooth_color_prior(file="zhang_probs.npy")
     compute_prior_factor()
     print("Calculated color priors. Exiting...")
 

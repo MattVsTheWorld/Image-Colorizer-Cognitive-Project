@@ -29,8 +29,8 @@ def main():
     # ------------------------------------------------------
     # ---------------------- Optimizer ---------------------
     # ------------------------------------------------------
-    new_model = build_model(batchnorm=False)
-    opt = keras.optimizers.Adam(lr=learning_rate, decay=0.001)
+    new_model = build_model()
+    opt = keras.optimizers.Adam(lr=learning_rate)
     new_model.compile(optimizer=opt, loss=categorical_crossentropy_color)
 
     # -----------

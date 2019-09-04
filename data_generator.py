@@ -14,6 +14,8 @@ from tqdm import tqdm
 from glob import glob
 import shutil
 from utils import clear_folder
+from scipy.signal import gaussian, convolve
+
 
 def get_soft_encoding(image_ab, nn_finder, num_q):
     # ------------------------------------------------------

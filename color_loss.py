@@ -1,26 +1,19 @@
-from keras.backend import reshape, gather, argmax, categorical_crossentropy, sparse_categorical_crossentropy, mean, sum
+from keras.backend import reshape, gather, argmax, categorical_crossentropy, mean, sum, print_tensor
 import numpy as np
 import os
 from config import num_colors
-import tensorflow as tf
 
 
-def categorical_crossentropy_color(y_true, y_pred, precalc=False):
-    # # y_true/pred is a distribution of probabilities of colors (313) for each pixel * each image
-    # y_true = keras.backend.print_tensor(y_true, message='\ny_true = ', summarize=313*8*8)
-    # y_pred = keras.backend.print_tensor(y_pred, message='\ny_pred = ', summarize=313*8*8)
-    # # shape = keras.backend.print_tensor(keras.backend.shape(y_true), message='\nshape = ', summarize=313)
+def categorical_crossentropy_color(y_true, y_pred):
 
     y_true = reshape(y_true, (-1, num_colors))
     y_pred = reshape(y_pred, (-1, num_colors))
+    # take the most probable colour of the 5 nearest neighbours
     idx_max = argmax(y_true, axis=1)
-    # Use own prior factor, calculated in class_rebalancing
-    if not precalc:
-        prior_factor = np.load(os.path.join('data/', "prior_factor.npy")).astype(np.float32)
-    # Use prior factor as calculated by Zhang et al in their paper
-    else:
-        prior_factor = np.load(os.path.join('data/', "prior_probs_zhang.npy")).astype(np.float32)
 
+    prior_factor = np.load(os.path.join('data/', "prior_factor.npy")).astype(np.float32)
+
+    # Find weight of the corresponding color. Rarer colors have higher weight
     weights = gather(prior_factor, idx_max)
     weights = reshape(weights, (-1, 1))
 
@@ -29,8 +22,5 @@ def categorical_crossentropy_color(y_true, y_pred, precalc=False):
 
     cross_ent = categorical_crossentropy(y_true, y_pred)
     cross_ent = mean(cross_ent, axis=-1)
-    # cross_ent = sum(cross_ent, axis=-1)
-
-    # cross_ent = categorical_crossentropy(y_true, y_pred)
 
     return cross_ent
