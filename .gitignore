@@ -15,10 +15,10 @@ data/
 image_names/
 /test_images/bird/
 src/images.pickle
-*.pyc
-*.gz
-*.pdf
-*.out
-*.log
-*.aux
-*.synctex(busy)
+**/*.pyc
+**/*.gz
+**/*.pdf
+**/*.out
+**/*.log
+**/*.aux
+**/*.synctex(busy)
