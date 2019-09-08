@@ -62,6 +62,12 @@
 
 \usepackage{longtable}
 
+\usepackage{amsmath,amssymb}
+
+\DeclareRobustCommand{\bbone}{\text{\usefont{U}{bbold}{m}{n}1}}
+
+\DeclareMathOperator{\EX}{\mathbb{E}}% expected value
+
 \usepackage{multicol}
 
 %----------------------------------------------------------------------------------------
@@ -117,12 +123,19 @@
 \subsection{Loss function}
 
 \begin{equation}
-\label{eq:emc}
-e = mc^2
+L_{cl}(P,T) = - \sum_{q} \: T_q \: log(P_q)
 \end{equation}
 
+\begin{equation}
+L_{cl}(P,T) = - \sum_{h,w}(v(T_{h,w}) \: \sum_{q} \: T_{h,w,q} \: log(P_{h,w,q}))
+\end{equation}
 
 \subsection{Class-rebalancing}
+
+\begin{equation}
+w = (1 - \lambda)p + \frac{\lambda}{U})^{-1}
+\end{equation}
+
 
 \subsection{Network architecture}
 
@@ -175,7 +188,24 @@ e = mc^2
 
 \subsection{Parameters}
 
+\begin{equation}
+Var(w_i) = \frac{2}{fan\_in}
+\end{equation}
+
+\begin{equation}
+Loss = Error(y,\tilde{y}) + \lambda\sum_{i=1}^{N} w_i^2
+\end{equation}
+
+
 \subsection{Prediction evaluation}
+
+\begin{equation}
+H(P) = \EX[f(P)] 
+\end{equation}
+
+\begin{equation}
+f(P) = \frac{\exp(log(P)/T)}{\sum_q \: \exp(log(P_q)/T)}
+\end{equation}
 
 Text requiring further explanation\footnote{Example footnote}.
 
