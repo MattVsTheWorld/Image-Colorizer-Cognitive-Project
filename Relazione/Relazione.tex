@@ -92,7 +92,8 @@
 \date{\today} % Leave empty to omit a date
 \renewcommand{\maketitlehookd}{%
 \begin{abstract}
-\noindent \blindtext % Dummy abstract text - replace \blindtext with your abstract text
+\noindent
+In this report we aim to cover some of the most recent advances in automatic image colorization of black and white pictures through the use of CNNs, as well as attempt to create our own implementation of one such. We describe the problem in its underconstrained nature, and discuss the approach by Zhang et al. [1] which was used as our main reference. We then proceed to exhibit our implementation and the results we obtained. Lastly, we mention some different approaches and architectures that have surfaced in the most recent years, and make a comparison (MAYBE) (ANCHE NO SECONDO ME).
 \end{abstract}
 }
 
@@ -109,22 +110,35 @@
 
 \section{Introduction}
 
-\lettrine[nindent=0em,lines=3]{L} orem ipsum dolor sit amet, consectetur adipiscing elit.
-\blindtext % Dummy text
+The task of colorizing grayscale images is not a simple one; to our imagination, some details might seem trivial (e.g. the sky is blue), yet some other are seemingly impossible to recover. As argued by [Charpiat 3], color prediction is, in fact, inherently multimodal - meaning many objects can take several plausible colorizations without a significant change in shape. To convince ourselves of this, it suffices to think a few examples. Apples, trees throughout seasons, artificial objects of various nature - a grayscale depiction of such has lost too much information for us to make a perfectly accurate guess. Nevertheless, we can easily imagine a plausible colorization, and would like an automatic system to be able to do the same.
+Classical methods of the past have relied upon either user input or a large repository of reference images to use at test time. Recent approaches, however, have successfully leveraged the developments of deep convolutional neural networks (CNNs) to obtain a solution that requires no database and is fast at test time [Larrson].\\
+The first and key observation is that, in order to colorize images, a system must be able to interpret the semantic information of an image. In other words, it must be able to analyze the composition of the scene (what is in the picture) and where objects are located. Therefore, it comes as no surprise that CNNs are a perfect candidate for this task.\\
+Furthermore, we may observe that colorization can be, in fact, seen as a classification problem where the classes to predict are a number of quantized color values (more on this later). Following [[Zhang’s]] implementation, we produced a system that predicts color probabilities over 313 quantized color bins. These probabilities are then used at the time of prediction to produce the final colorization. The prediction itself is produced by a single, feed forward pass through the network. \\
+A last observation is that, usually, not all colors are represented equally in a picture. It’s easy for backgrounds to have a desaturated color that take up a large part of the picture (e.g. cloudy skies, walls, dirt); consequently, a network trained on a large set of images will be biased towards these colors. As suggested by [[Zhang]], we introduce a form of class rebalancing in our loss function to produce brighter colors as well as push towards rarer ones.
 
-\blindtext % Dummy text
+
 
 %------------------------------------------------
 
-\section{Implementation}
+\section{Approach}
+In this section, we discuss the theoretical approach to the problem. This includes a discussion on the preferred color space used for the data, the formulation of an appropriate loss function, the class-rebalancing solution to desaturated colors, the network architecture itself and the way its results are interpreted.
+
 
 \subsection{Color space}
+Usual color spaces, as RGB or BGR, require the prediction of three different channels to recreate a colorized image. A common approach is to instead adopt the CIE-Lab color space, which proves to be useful in that it restricts the problem by one dimension. This color space is also comprised of three channels, but has the useful characteristic that all grayscale information is stored in one of such. Indeed, the first channel (namely \textbf{L}) tracks the “lightness” value of a pixel (ranging from 0 for black to 100 for white). Channel \textbf{A} represent instead the color range between red and green, while channel \textbf{B} does the same for blue and yellow. As said, adopting this image representation technique makes it fairly trivial to obtain the black and white version of a picture as the problem input (by simply discarding the \textbf{A} and \textbf{B} channels). Furthermore, it simplifies the classification task, as there are only two channels to predict over.
 
 \subsection{Loss function}
+As was briefly previewed, our system is in fact a classification model which returns probabilities over a set of color classes. One of the most commonly used loss functions in multinomial classification problems is that of \texttt{Cross Entropy}, which calculates the average difference between the ground truth and the predicted probability distribution. 
+In order to perform classification, however, we first have to define the classes we want to predict. To do this, we synthesize the color space into a small number of AB pairs (with \textbf{L} = 50). A grid with space size 10 is overlaid onto the color space, thus reducing the number of relevant color pairs by a factor of ten. From the remaining colors, out of gamut ones are removed to obtain the final 313 color classes used in the classification task.
+
+In order to make a comparison, however, we now require ground truth values in the same form of the predicted probabilities. The real color values are therefore transformed into probability distributions. This is achieved through soft-encoding, by mapping each pixel color to its nearest five quantized AB color pairs and giving each one a weight based on the euclidean distance from the original color. Such distance-weights are then smoothed with a Gaussian kernel (with =5). [[ref 31 del paper]]
 
 \begin{equation}
 L_{cl}(P,T) = - \sum_{q} \: T_q \: log(P_q)
 \end{equation}
+
+However, that alone is not enough to obtain a meaningful colorization. This is because of the inherently uneven color distribution; in particular, background and foreground colors such as blue and green are much more prevalent than rare colors like purple. The resulting model will therefore be biased to more common colors, neglecting rare ones. 
+The solution to this problem proposed by Zhang [1] is to reweight the probabilities by a factor based on the scarcity of the color. This process, named class-rebalancing, allows us to obtain our final loss formulation:
 
 \begin{equation}
 L_{cl}(P,T) = - \sum_{h,w}(v(T_{h,w}) \: \sum_{q} \: T_{h,w,q} \: log(P_{h,w,q}))
@@ -132,12 +146,22 @@ L_{cl}(P,T) = - \sum_{h,w}(v(T_{h,w}) \: \sum_{q} \: T_{h,w,q} \: log(P_{h,w,q})
 
 \subsection{Class-rebalancing}
 
+The idea of class-rebalancing is to take into account the inherent imbalance of class representation by reweighting the loss of each pixel at train time based on the pixel color rarity[1]. The computation of color weights starts by calculating the number of occurrences of each AB color pair over the whole image dataset (mapping each pixel to the closest bin). The resulting color frequency values are then turned into probability distributions, which are smoothed with a gaussian kernel as is done with ground truth probabilities ($\sigma$ = 5). In order to lower the significant impact of these weights, these are mixed with a uniform probability distribution (p = 1/313). Finally, we take the reciprocal of the result in order to reverse the probability values, as we would like frequent colors to have little weights and vice-versa. The mixing factor suggested by [ZHANG 1] is of $1/2$. Furthermore, the result is normalized again, so that the weighting factor is 1 on expectation.
+
+
 \begin{equation}
 w = (1 - \lambda)p + \frac{\lambda}{U})^{-1}
 \end{equation}
 
 
 \subsection{Network architecture}
+
+The network architecture follows the one proposed by [Zhang], FIGURE [[11]]. The network itself is comprised of 30 layers, which are either 2D convolutional layers or batch normalization layers.
+
+
+\subsubsection{Layers}
+The network is divided into 8 layer blocks, all of which are followed by a batch normalization layer (except for the last one, where a 1x1 conv and cross-entropy layer is imposed). The following table describes the layers and their parameter values.
+
 
 \begin{table*}[t]
 \centering
@@ -199,6 +223,12 @@ Loss = Error(y,\tilde{y}) + \lambda\sum_{i=1}^{N} w_i^2
 
 \subsection{Prediction evaluation}
 
+Once the model has been trained, prediction is done through a single, feed forward pass through the network, which accepts the L channel of a picture and produces a probability distribution over the 313 quantized colors for each pixel.
+
+It remains to decide how to use this information to produce our colorization. One choice is to take the most frequent and probable values; while this idea results very vibrant colors, it often produces spatially inconsistent results and “hard transitions” from one color to the other. A better approach could therefore be to take the mean over each of the quantized bins, weighing them by their probability. This ensures softer transitions, but runs into the unwanted consequence that colors become desaturated, as too much importance is attributed to lower probability colors.
+
+The solution proposed by [ZHANG 1] attempts to have the best of both worlds. The authors suggest taking what they name “annealed mean” of the distribution. This consists of an interpolation of the softmax distribution by means of a temperature value T, and consequently taking the mean of the result. Strictly speaking, this translates into dividing each value by the aforementioned temperature value, which ranges from 0 to 1 (the suggested value is 0.38, which we adhered to). This ensures that more importance is given to high probability values, resulting into the vibrant colorization desired as well as better spatial consistency. 
+
 \begin{equation}
 H(P) = \EX[f(P)] 
 \end{equation}
@@ -214,10 +244,12 @@ Text requiring further explanation\footnote{Example footnote}.
 
 \section{Experimentation}
 
-\subsection{Subsection One}
+\subsection{Implementation}
+
+In this section, we briefly discuss the actual implementation and the results of our experiments. This includes a discussion on libraries and data used, hardware specifics and graph.
+
 
 A statement requiring citation \cite{Figueredo:2009dg}.
-\blindtext % Dummy text
 
 
 %------------------------------------------------
@@ -233,8 +265,6 @@ A statement requiring citation \cite{Figueredo:2009dg}.
 \section{Conclusions}
 
 %------------------------------------------------
-
-\blindtext % Dummy text
 
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
