@@ -6,7 +6,7 @@ sys.stderr = open(os.devnull, 'w')
 sys.stderr = stderr
 import keras.backend as K
 import tensorflow as tf
-from keras.layers import Input, Conv2D, BatchNormalization, Conv2DTranspose, UpSampling2D
+from keras.layers import Input, Conv2D, BatchNormalization, UpSampling2D
 from keras.models import Model
 from keras.regularizers import l2
 from keras.utils import plot_model
@@ -135,11 +135,6 @@ def build_model():
     # ----------------------------------------------------------------------------
     # ---------------------------------- Conv 8 ----------------------------------
     # ----------------------------------------------------------------------------
-    # TODO: test
-    # x = Conv2DTranspose(128, (kernel_size+1, kernel_size+1), activation='relu', padding='same',
-    #                     dilation_rate=1, name='conv8_1', kernel_initializer=kernel_init,
-    #                     kernel_regularizer=l2_reg, strides=(2, 2))(x)
-    # TODO: test
     # UpSample before convolution
     x = UpSampling2D(size=(2, 2))(x)
     # Spacial resolution of output = 56
@@ -166,19 +161,6 @@ def main():
     # Print specifics
     print(encoder_decoder.summary())
     plot_model(encoder_decoder, to_file='encoder_decoder.svg', show_layer_names=True, show_shapes=True)
-
-    # # Possibility of multi-gpu model
-    # parallel_model = multi_gpu_model(encoder_decoder, gpus=None)
-    # print(parallel_model.summary())
-    # plot_model(parallel_model, to_file='parallel_model.svg', show_layer_names=True, show_shapes=True)
-
-    # try:
-    #     model = multi_gpu_model(model, cpu_relocation=True)
-    #     print("Training using multiple GPUs..")
-    # except:
-    #     print("Training using single GPU or CPU..")
-
-    # Destroys the current TF graph and creates a new one
     K.clear_session()
 
 
