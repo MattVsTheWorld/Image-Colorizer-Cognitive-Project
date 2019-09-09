@@ -6,7 +6,6 @@ venv/
 **/*.pickle
 **/*.jpg
 **/*.jpeg
-**/*.png
 **/*.pyc
 **/*.pyc
 **/*.gz
