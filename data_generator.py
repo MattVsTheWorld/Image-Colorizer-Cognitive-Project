@@ -14,7 +14,6 @@ from tqdm import tqdm
 from glob import glob
 import shutil
 from utils import clear_folder
-from scipy.signal import gaussian, convolve
 
 
 def get_soft_encoding(image_ab, nn_finder, num_q):
@@ -67,14 +66,12 @@ class DataGenSequence(Sequence):
         with open(names_file, 'r') as f:
             self.names = f.read().splitlines()
 
-        # np.random.shuffle(self.names)
-
         # Load the array of quantized ab value
         q_ab = np.load("data/lab_gamut.npy")
         self.num_q = q_ab.shape[0]
 
         # Fit a NN to q_ab
-        self.nn_finder = nn.NearestNeighbors(algorithm='ball_tree').fit(q_ab)
+        self.nn_finder = nn.NearestNeighbors(n_neighbors= nb_neighbors, algorithm='ball_tree').fit(q_ab)
 
     def __len__(self):
         # Number of batches
@@ -157,8 +154,6 @@ def split_data(image_folder, fmt):
     # Pick random validation file names
     valid_names = random.sample(names, num_valid_samples)
     train_names = [n for n in names if n not in valid_names]
-    # shuffle(valid_names)
-    # shuffle(train_names)
 
     with open('image_names/valid_names.txt', 'w') as file:
         file.write('\n'.join(valid_names))

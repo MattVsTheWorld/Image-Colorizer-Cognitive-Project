@@ -1,7 +1,5 @@
 import os
 from glob import glob
-import random
-from numpy.core._multiarray_umath import ndarray
 import cv2
 import sys
 stderr = sys.stderr
@@ -9,7 +7,7 @@ sys.stderr = open(os.devnull, 'w')
 import keras.backend as K
 sys.stderr = stderr
 import numpy as np
-from config import img_rows, img_cols, data_dir, T, imgs_dir, fmt
+from config import img_rows, img_cols, data_dir, T
 from model import build_model
 from utils import clear_folder
 import tensorflow as tf
@@ -57,8 +55,6 @@ def colorize(model, x_test, height, width, nb_q, q_ab, lab):
     X_a = cv2.resize(X_a, (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
     X_b = cv2.resize(X_b, (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
 
-    # Before: -90 <=a<= 100, -110 <=b<= 110
-    # After: 38 <=a<= 228, 18 <=b<= 238
     X_a = X_a + 128
     X_b = X_b + 128
 
@@ -131,7 +127,6 @@ def main():
         bgr = cv2.resize(bgr, (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
         gray = cv2.resize(gray, (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
 
-        # L: 0 <=L<= 255, a: 42 <=a<= 226, b: 20 <=b<= 223.
         lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
 
         x_test = np.empty((1, img_rows, img_cols, 1), dtype=np.float32)

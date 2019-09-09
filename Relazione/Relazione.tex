@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Journal Article
 % LaTeX Template
 % Version 1.4 (15/5/16)
@@ -53,12 +53,22 @@
 \pagestyle{fancy} % All pages have headers and footers
 \fancyhead{} % Blank out the default header
 \fancyfoot{} % Blank out the default footer
-\fancyhead[C]{Running title $\bullet$ May 2016 $\bullet$ Vol. XXI, No. 1} % Custom header text
+\fancyhead[C]{Image Colorization $\bullet$ Sep 2019} % Custom header text
 \fancyfoot[RO,LE]{\thepage} % Custom footer text
 
 \usepackage{titling} % Customizing the title section
 
 \usepackage{hyperref} % For hyperlinks in the PDF
+
+\usepackage{longtable}
+
+\usepackage{amsmath,amssymb}
+
+\DeclareRobustCommand{\bbone}{\text{\usefont{U}{bbold}{m}{n}1}}
+
+\DeclareMathOperator{\EX}{\mathbb{E}}% expected value
+
+\usepackage{multicol}
 
 %----------------------------------------------------------------------------------------
 %	TITLE SECTION
@@ -68,11 +78,12 @@
 
 \pretitle{\begin{center}\Huge\bfseries} % Article title formatting
 \posttitle{\end{center}} % Article title closing formatting
-\title{Article Title} % Article title
+\title{Image Colorization} % Article title
 \author{%
-\textsc{John Smith}\thanks{A thank you or further information} \\[1ex] % Your name
-\normalsize University of California \\ % Your institution
-\normalsize \href{mailto:john@smith.com}{john@smith.com} % Your email address
+\textsc{Tommaso Loss, Matteo Marcuzzo} %\thanks{A thank you or further information}
+ \\[1ex] % Your name
+\normalsize University of Padua \\ % Your institution
+%\normalsize \href{mailto:john@smith.com}{john@smith.com} % Your email address
 %\and % Uncomment if 2 authors are required, duplicate these 4 lines if more
 %\textsc{Jane Smith}\thanks{Corresponding author} \\[1ex] % Second author's name
 %\normalsize University of Utah \\ % Second author's institution
@@ -105,60 +116,123 @@
 
 %------------------------------------------------
 
-\section{Methods}
+\section{Implementation}
 
-Maecenas sed ultricies felis. Sed imperdiet dictum arcu a egestas. 
-\begin{itemize}
-\item Donec dolor arcu, rutrum id molestie in, viverra sed diam
-\item Curabitur feugiat
-\item turpis sed auctor facilisis
-\item arcu eros accumsan lorem, at posuere mi diam sit amet tortor
-\item Fusce fermentum, mi sit amet euismod rutrum
-\item sem lorem molestie diam, iaculis aliquet sapien tortor non nisi
-\item Pellentesque bibendum pretium aliquet
-\end{itemize}
-\blindtext % Dummy text
+\subsection{Color space}
+
+\subsection{Loss function}
+
+\begin{equation}
+L_{cl}(P,T) = - \sum_{q} \: T_q \: log(P_q)
+\end{equation}
+
+\begin{equation}
+L_{cl}(P,T) = - \sum_{h,w}(v(T_{h,w}) \: \sum_{q} \: T_{h,w,q} \: log(P_{h,w,q}))
+\end{equation}
+
+\subsection{Class-rebalancing}
+
+\begin{equation}
+w = (1 - \lambda)p + \frac{\lambda}{U})^{-1}
+\end{equation}
+
+
+\subsection{Network architecture}
+
+\begin{table*}[t]
+\centering
+\captionof{table}{Network structure}
+
+\begin{tabular}{|c|c|c|c|c|c|}
+	\hline
+	\hline
+	Layer & Filters & Spac. Res. & Kernel size & Stride & Dilation\\ 
+	\hline
+	\hline
+	\multicolumn{6}{|c|}{input data (with size e.g. 224 * 224)}\\ \hline
+	conv1\_1 & 64 & 224 & 3x3 & (1,1) & 1 \\ \hline
+	conv1\_2 & 64 & 112 & 3x3 & (2,2) & 1 \\ \hline
+	\multicolumn{6}{|c|}{Batch normalization}\\ \hline
+	conv2\_1 & 128 & 112 & 3x3 & (1,1) & 1 \\ \hline
+	conv2\_2 & 128 & 56 & 3x3 & (2,2) & 1 \\ \hline
+	\multicolumn{6}{|c|}{Batch Normalization}\\ \hline
+	conv3\_1 & 256 & 56 & 3x3 & (1,1) & 1 \\ \hline
+	conv3\_2 & 256 & 56 & 3x3 & (1,1) & 1 \\ \hline
+	conv3\_3 & 256 & 28 & 3x3 & (2,2) & 1 \\ \hline
+	\multicolumn{6}{|c|}{Batch normalization}\\ \hline
+	conv4\_1 & 512 & 28 & 3x3 & (1,1) & 1 \\ \hline
+	conv4\_2 & 512 & 28 & 3x3 & (1,1) & 1 \\ \hline
+	conv4\_3 & 512 & 28 & 3x3 & (1,1) & 1 \\ \hline
+	\multicolumn{6}{|c|}{Batch normalization}\\ \hline
+	conv5\_1 & 512 & 28 & 3x3 & (1,1) & 2 \\ \hline
+	conv5\_2 & 512 & 28 & 3x3 & (1,1) & 2 \\ \hline
+	conv5\_3 & 512 & 28 & 3x3 & (1,1) & 2 \\ \hline
+	\multicolumn{6}{|c|}{Batch normalization}\\ \hline
+	conv6\_1 & 512 & 28 & 3x3 & (1,1) & 2 \\ \hline
+	conv6\_2 & 512 & 28 & 3x3 & (1,1) & 2 \\ \hline
+	conv6\_3 & 512 & 28 & 3x3 & (1,1) & 2 \\ \hline
+	\multicolumn{6}{|c|}{Batch normalization}\\ \hline
+	conv7\_1 & 256 & 28 & 3x3 & (1,1) & 1 \\ \hline
+	conv7\_2 & 256 & 28 & 3x3 & (1,1) & 1 \\ \hline
+	conv7\_3 & 256 & 28 & 3x3 & (1,1) & 1 \\ \hline
+	\multicolumn{6}{|c|}{Batch normalization}\\ \hline
+	\multicolumn{6}{|c|}{2D Upsampling with size 2*2}\\ \hline
+	conv8\_1 & 128 & 56 & 3x3 & (0.5,0.5)\footnote{The .5 stride is simulated through the 2d upsampling. Earlier implementations made instead use of a deconvolutional layer, but we found this other approach to work better in practice.
+	}. & 1 \\ \hline
+	conv8\_2 & 128 & 56 & 3x3 & (1,1) & 1 \\ \hline
+	conv8\_3 & 128 & 56 & 3x3 & (1,1) & 1 \\ \hline
+	\multicolumn{6}{|c|}{Softmax Layer}\\ \hline
+	
+\end{tabular}
+\end{table*}
+
+\subsection{Parameters}
+
+\begin{equation}
+Var(w_i) = \frac{2}{fan\_in}
+\end{equation}
+
+\begin{equation}
+Loss = Error(y,\tilde{y}) + \lambda\sum_{i=1}^{N} w_i^2
+\end{equation}
+
+
+\subsection{Prediction evaluation}
+
+\begin{equation}
+H(P) = \EX[f(P)] 
+\end{equation}
+
+\begin{equation}
+f(P) = \frac{\exp(log(P)/T)}{\sum_q \: \exp(log(P_q)/T)}
+\end{equation}
 
 Text requiring further explanation\footnote{Example footnote}.
 
 %------------------------------------------------
 
-\section{Results}
 
-\begin{table}
-\caption{Example table}
-\centering
-\begin{tabular}{llr}
-\toprule
-\multicolumn{2}{c}{Name} \\
-\cmidrule(r){1-2}
-First name & Last Name & Grade \\
-\midrule
-John & Doe & $7.5$ \\
-Richard & Miles & $2$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\blindtext % Dummy text
-
-\begin{equation}
-\label{eq:emc}
-e = mc^2
-\end{equation}
-
-\blindtext % Dummy text
-
-%------------------------------------------------
-
-\section{Discussion}
+\section{Experimentation}
 
 \subsection{Subsection One}
 
 A statement requiring citation \cite{Figueredo:2009dg}.
 \blindtext % Dummy text
 
-\subsection{Subsection Two}
+
+%------------------------------------------------
+
+\section{Considerations}
+
+\subsection{Recent developments}
+
+%------------------------------------------------
+
+%------------------------------------------------
+
+\section{Conclusions}
+
+%------------------------------------------------
 
 \blindtext % Dummy text
 

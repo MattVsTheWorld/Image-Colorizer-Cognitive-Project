@@ -8,6 +8,13 @@ venv/
 **/*.jpeg
 **/*.png
 **/*.pyc
+**/*.pyc
+**/*.gz
+**/*.pdf
+**/*.out
+**/*.log
+**/*.aux
+**/*.synctex.gz
 src/__pycache__/
 src/logs/
 src/models/
@@ -15,4 +22,3 @@ data/
 image_names/
 /test_images/bird/
 src/images.pickle
-*.pyc

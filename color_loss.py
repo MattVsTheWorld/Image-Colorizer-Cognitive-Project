@@ -1,4 +1,4 @@
-from keras.backend import reshape, gather, argmax, categorical_crossentropy, mean, sum, print_tensor
+from keras.backend import reshape, gather, argmax, categorical_crossentropy, mean
 import numpy as np
 import os
 from config import num_colors

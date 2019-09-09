@@ -7,8 +7,6 @@ from scipy.signal import gaussian, convolve
 from config import imgs_dir, fmt, num_colors
 from config import data_dir as abs_data_dir
 from tqdm import tqdm
-import matplotlib.pylab as plt
-
 
 def load_data(size, image_folder=imgs_dir):
     # """
@@ -32,8 +30,7 @@ def load_data(size, image_folder=imgs_dir):
         lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
         lab = lab.astype(np.int32)
         X_ab[i] = lab[:, :, 1:] - 128
-        # print("")
-    # shape = (num_images, rows, cols, channels[2])
+
     return X_ab
 
 
@@ -57,17 +54,9 @@ def compute_color_prior(X_ab, data_dir=abs_data_dir):
     # Count number of occurrences of each color
     idx = np.ravel(idx)
 
-    # Only retain the indexes of colors that are represented
-    # elements are indices
-    # distribution = np.nonzero(counts)[0]
-    #
-    # prior_prob = np.zeros((q_ab.shape[0]))
-    # for i in range(q_ab.shape[0]):  # TODO: seems dumb
-    #     prior_prob[distribution] = counts[distribution]
-
     # Counts how many of each color is present (counting how many times their index is present)
     counts = np.bincount(idx, minlength=num_colors).astype(np.float32)
-    # Epsilon piccola a p i a c e r e (avoids 0 values/ NaN)
+    # Epsilon small to taste (avoids 0 values/ NaN)
     counts += 1E-6
     # Transform into probability
     prior_prob = counts / (1.0 * np.sum(counts))
@@ -77,10 +66,10 @@ def compute_color_prior(X_ab, data_dir=abs_data_dir):
 
 
 def smooth_color_prior(sigma=5, data_dir=abs_data_dir, file="prior_probability.npy"):
-    """
-    Smooth color probability with a gaussian window
-    :param sigma: gaussian parameter
-    """
+    # """
+    # Smooth color probability with a gaussian window
+    # :param sigma: gaussian parameter
+    # """
     prior_prob = np.load(os.path.join(data_dir, file))
 
     # Smooth with gaussian
@@ -100,27 +89,20 @@ def smooth_color_prior(sigma=5, data_dir=abs_data_dir, file="prior_probability.n
     # Save
     np.save(os.path.join(data_dir, "prior_prob_smoothed.npy"), prior_prob_smoothed)
 
-    # Plot
-    # plt.yscale("log")
-    # plt.plot(prior_prob)
-    # plt.show()
-    # plt.yscale("log")
-    # plt.plot(prior_prob_smoothed, "g--")
-    # plt.show()
-    # plt.yscale("log")
-    # plt.plot(x_coord, smoothed, "r-")
-    # plt.show()
 
-
-def compute_prior_factor(gamma=0.5, alpha=1, data_dir=abs_data_dir):
-    # Todo: missing description (formula 4)
+def compute_prior_factor(gamma=0.5, data_dir=abs_data_dir):
+    # """
+    # Calculate final weights from the smoothed probability distribution
+    # :gamma: relationship factor between uniform probability and smoothed
+    # :data_dir: directory containing smoothed probability values
+    # """
     prior_prob_smoothed = np.load(os.path.join(data_dir, "prior_prob_smoothed.npy"))
 
     uni_probs = np.ones_like(prior_prob_smoothed)
     uni_probs = uni_probs / np.sum(1.0 * uni_probs)
 
     prior_factor = ((1 - gamma) * prior_prob_smoothed) + gamma * uni_probs
-    prior_factor = np.power(prior_factor, -alpha)
+    prior_factor = np.power(prior_factor, -1)
 
     # renormalize
     prior_factor = prior_factor / (np.sum(prior_factor * prior_prob_smoothed))
