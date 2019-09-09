@@ -7,7 +7,6 @@ venv/
 **/*.jpg
 **/*.jpeg
 **/*.pyc
-**/*.pyc
 **/*.gz
 **/*.pdf
 **/*.out
@@ -20,4 +19,7 @@ src/models/
 data/
 image_names/
 /test_images/bird/
+_legacy/1_Deprecated version/src/output_images
+output_images/
+test_images/
 src/images.pickle
