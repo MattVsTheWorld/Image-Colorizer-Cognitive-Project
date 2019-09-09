@@ -62,6 +62,8 @@
 
 \usepackage{longtable}
 
+\usepackage{graphicx}
+
 \usepackage{amsmath,amssymb}
 
 \DeclareRobustCommand{\bbone}{\text{\usefont{U}{bbold}{m}{n}1}}
@@ -69,6 +71,7 @@
 \DeclareMathOperator{\EX}{\mathbb{E}}% expected value
 
 \usepackage{multicol}
+
 
 %----------------------------------------------------------------------------------------
 %	TITLE SECTION
@@ -248,7 +251,39 @@ Text requiring further explanation\footnote{Example footnote}.
 
 In this section, we briefly discuss the actual implementation and the results of our experiments. This includes a discussion on libraries and data used, hardware specifics and graph.
 
+\subsection{Dataset}
 
+\begin{figure}
+	\includegraphics[width=\linewidth]{img/ours.png}
+	\caption{Ours color prior results}
+	\label{fig:oursprior}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{img/zhang.png}
+	\caption{Zhang \cite{Zhang:2016} color prior results}
+	\label{fig:zhangprior}
+\end{figure}
+
+\subsection{Metrics}
+
+\subsection{Hyperparameters}
+
+\subsection{Hardware details}
+
+\subsection{Performance and results}
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{img/loss.png}
+	\caption{Loss}
+	\label{fig:loss}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{img/val_loss.png}
+	\caption{Validation Loss}
+	\label{fig:valloss}
+\end{figure}
 
 %------------------------------------------------
 
