@@ -127,25 +127,26 @@ def compute_prior_factor(gamma=0.5, alpha=1, data_dir=abs_data_dir):
 
     np.save(os.path.join(data_dir, "prior_factor.npy"), prior_factor)
 
-    # # Plot
-    # plt.clf()
-    # plt.yscale("log")
-    # plt.plot(prior_prob_smoothed)
-    # plt.show()
-    # plt.yscale("log")
-    # plt.plot(prior_factor, "g--")
-    # plt.show()
+    # Plot
+    plt.clf()
+    plt.yscale("log")
+    plt.plot(prior_prob_smoothed)
+    plt.show()
+    plt.yscale("log")
+    plt.plot(prior_factor, "g--")
+    plt.show()
 
 
 def main():
     # --------------------------------------------------
-    # Optional: How to calculate prior probability
-    # size = 128
+    # # Optional: How to calculate prior probability
+    # size = 64
     # # Load the sample of images
     # X_ab = load_data(size)
     # # Calculate prior probability of color
     # compute_color_prior(X_ab)
     # smooth_color_prior(file="prior_probability.npy")
+    # compute_prior_factor()
     # --------------------------------------------------
     smooth_color_prior(file="zhang_probs.npy")
     compute_prior_factor()

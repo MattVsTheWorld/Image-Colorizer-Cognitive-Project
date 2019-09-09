@@ -89,15 +89,20 @@ def main():
     model_1_weights_path = max(glob('models/*.hdf5'), key=os.path.getctime)
     model_2_weights_path = min(glob('models/*.hdf5'), key=os.path.getctime)
 
-    model_1 = build_model(False)
-    model_2 = build_model(False)
+    model_1 = build_model()
+    model_2 = build_model()
     model_1.load_weights(model_1_weights_path)
     model_2.load_weights(model_2_weights_path)
 
     print(model_1.summary())
 
-    names = [f for f in os.listdir('test_images') if f.lower().endswith('.jpg')]
+    predict_folder = 'test_images'
+    # predict_folder = 'alt_set'
 
+    names = [f for f in os.listdir(predict_folder) if f.lower().endswith('.jpg')]
+    names_jpeg = [f for f in os.listdir(predict_folder) if f.lower().endswith('.jpeg')]
+    names_jpeg = [f for f in os.listdir(predict_folder) if f.lower().endswith('.png')]
+    names = names + names_jpeg
     # Pick 10 samples from validation set
     # samples = random.sample(names, 10)
 
@@ -112,14 +117,14 @@ def main():
     clear_folder('output_images')
 
     print("----------------------------------------\n"
-          "Prediction '1' based on " + model_1_weights_path[7:] + "\n"
-          "Prediction '2' based on " + model_2_weights_path[7:] + "\n"
+          "Prediction '1' based on " + model_1_weights_path + "\n"
+          "Prediction '2' based on " + model_2_weights_path + "\n"
           "----------------------------------------")
 
     for i in range(len(names)):
         image_name = names[i]
-        filename = os.path.join('test_images', image_name)
-        print('Processing image: {}'.format(filename[16:]))
+        filename = os.path.join(predict_folder, image_name)
+        print('Processing image: {}'.format(filename))
         # b: 0 <=b<=255, g: 0 <=g<=255, r: 0 <=r<=255.
         bgr = cv2.imread(filename)
         gray = cv2.imread(filename, 0)
