@@ -271,7 +271,7 @@ Since the data required quite a bit of preprocessing, the loading of images from
 
 \subsection{Dataset}
 
-While we initially planned on using the full Image Net dataset \cite{Imagenet}, we soon realized we lacked the computational power to process it in its full size, even after we decided to move our experiments on the Google Cloud Platform (more on this later). We therefore decided on a suitable subset, which we increased from time to time as we gained confidence in the correctness of our implementation. Our final dataset is comprised of 175’333 images (roughly 20gb worth of pictures) randomly and evenly selected from the 2017 Large Scale Visual Recognition Challenge Image Net dataset \cite{ImNetChallenge:2017}. Of this, 99\% was used as a training set, while the remaining 1\% for validation. While these percentages might seem odd, we found many implementations used even less images for validation. We found this value had the least discrepancy between the values of loss and validation loss, while still allowing validation to be performed in a timely manner.
+While we initially planned on using the full Image Net dataset \cite{Imagenet}, we soon realized we lacked the computational power to process it in its full size, even after we decided to move our experiments on the Google Cloud Platform \cite{GCP} (more on this later). We therefore decided on a suitable subset, which we increased from time to time as we gained confidence in the correctness of our implementation. Our final dataset is comprised of 175’333 images (roughly 20gb worth of pictures) randomly and evenly selected from the 2017 Large Scale Visual Recognition Challenge Image Net dataset \cite{ImNetChallenge:2017}. Of this, 99\% was used as a training set, while the remaining 1\% for validation. While these percentages might seem odd, we found many implementations used even less images for validation. We found this value had the least discrepancy between the values of loss and validation loss, while still allowing validation to be performed in a timely manner.
 
 With regards to the prior color probability (used in the class-rebalancing method), while we did write our own implementation and initially used it, our final implementation utilizes the prior probabilities calculated by Zhang \cite{Zhang:2016}, as it is made publicly available by the authors. This choice may again be justified by our lack of computational power, as we could only manage to calculate such prior on either a subset of Image Net or on greatly downscaled images. Nevertheless, if we make a comparison, our prior factor \ref{fig:oursprior} does not differ greatly from the original authors’ \ref{fig:valloss} . We decided nonetheless to utilize the more accurate data, as it is based on the full Image Net dataset.
 
@@ -305,9 +305,57 @@ Of course the correcteness of these tests is not guaranteed considered the low n
 
 \subsection{Hyperparameters}
 
+Once we finalized our implementation, we experimented with a few parameters in order to find the ones that best suited the reduced scale of our experiments.
+
+\subsubsection{Image size}
+Unsurprisingly, our experiments show that using higher image sizes result in better training. Our earlier tests used smaller images in order to hasten training and fit in the limited memory of our machines, but with our eventual move to the cloud we settled on a size of 256x256 pixels. This allowed to retain a good amount of detail while maintaining a batch size we were comfortable with.
+
+\subsubsection{Batch size}
+Though we tried a few different sizes for the data batches to be used at each training step, we settled on a value of 64. This pushed the limits of our hardware to its maximum (with each batch utilizing almost the full 15GB of GPU memory). While we tried to vary the size of images to be able to create larger batches, we found this compromise to be what gave us the best results. This may quite obviously be because of the higher definition of the images, but recent works also advise against using larger and larger batches \cite{Nitish:2017}, which is something we took into consideration.
+
+\subsubsection{Learning rate}
+We tested various learning rates, and settled on a value of  3.16e-5 (with regards to the Adam optimizer). Many values were experimented with, but we found that higher order of magnitudes would quickly become stuck after a rapid descent. Anything significantly lower, on the other hard, would have too much of a hard time exiting points of local optimum. 
+The final chosen value allows for training to be fast in the beginning without exhibiting wild swings in the behaviour of the loss value its later parts. 
+
+
 \subsection{Hardware details}
 
+The following are the hardware specifics for the machines used in our tests. We performed initial tests and training on one of our home machines, the details of which are as follows:
+\begin{itemize}
+\item \textbf{CPU}: AMD Ryzen 5 1600x  6-core (3.6GHz);
+\item \textbf{GPU}: NVIDIA GeForce GTX 970 (4 GB GDDR5); 
+\item \textbf{Memory}: 16 GB DDR4;
+\item \textbf{Persistency}: 500GB Force MP510 M.2 SSD;
+\item \textbf{OS}: Windows 10 Enterprise.
+\end{itemize}
+
+The aforementioned hardware allowed us to work on small dataset and downsized images, but in the long run did not have the GPU capabilities necessary for our needs, even on a reduced dataset. Namely, we required larger GPU memory in order to work on bigger images as well as working with larger batches. We therefore decided to move our experiments on the Google Cloud Platform \cite{GCP}, where we instantiated a virtual machine with the following specification:
+
+\begin{itemize}
+	\item \textbf{vCPU}: 4 virtual cores;
+	\item \textbf{GPU}: NVIDIA Tesla P4 (8 GB GDDR5) / T4 (16 GB GDDR6) (later tests); 
+	\item \textbf{Memory}: 15GB RAM;
+	\item \textbf{Persistency}: 65 GB standard persistent disk (HDD);
+	\item \textbf{OS}: Ubuntu 18.10.
+\end{itemize}
+
+As it may be noticed, we initially performed training on an NVIDIA Tesla P4, but later decided to upgrade to the T4 due to the higher memory capacity.
+
+
 \subsection{Performance and results}
+
+What follows is a brief description of our experimental results. This includes a brief analysis of the loss value trends, a recount of our most significant training runs and finally a showcase of our results.
+
+\subsubsection{Loss}
+
+As previously discussed in the metrics paragraph, commonly used metrics are hard or impossible to apply to a problem of this kind, as the final aim of the system is to produce a plausible result. While it may seem unsatisfactory to simply observe a loss value decrease, one has to remember that this value represents the mean difference between the predicted probability distribution of colors and the actual distribution obtained by the soft encoding of the ground truth. 
+We found that the system first produces some acceptable results below the value of 5, when it gains the confidence to attempt some vivid colorizations. In earlier epochs resulting pictures are still desaturated and grayish. Learning slows massively around the value of 4, where it begins a slow descent. Finally, in later epochs the system becomes more adept at recognizing shapes and coloring them correctly.
+
+\subsubsection{Training runs}
+
+Figure \ref{fig:loss} and \ref{fig:valloss} display the change in loss on the training and validation set throughout various epochs. These graphs refer to our latest training session, performed on our full 20gb dataset on an NVIDIA Tesla T4. The test ran for almost 67 hours, after which we decided to stop the instance as we began to see no improvement. As a matter of fact, later models struggled to improve on validation loss, and appeared to be overfitting on certain color patterns. 
+Our latest run was by far our longest, while previous tests were mostly aimed at finding a good balance between our hyperparameters. Our experimental results confirm the well known fact that smaller datasets provide insufficient information to the network. Practically speaking, we noted that the loss value would converge much faster and at higher values, and would thereon be unable to improve. Furthermore, with less images given to the network, a gap between training and validation loss would quickly appear, with the latter getting stuck at higher values (a clear indication of overfitting).
+
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{img/loss.png}
@@ -319,6 +367,17 @@ Of course the correcteness of these tests is not guaranteed considered the low n
 	\includegraphics[width=\linewidth]{img/val_loss.png}
 	\caption{Validation Loss, smoothing=0.6}
 	\label{fig:valloss}
+\end{figure}
+
+\subsubsection{Results}
+
+Figure \ref{fig:bestimgs} shows some of what we consider the best results of our network. Most importantly, some of these pictures display particularly vivid colors, thanks to the implementation of the class-rebalanced loss function. Furthermore, note how {{pictureofbagni}} exemplifies the multimodal nature of colorization; both images seems plausible, yet the colors are quite distinct from one another.
+Figure {{}} shows some failure cases. Unsurprisingly, we noticed that our system struggles with objects with a great amount of details. We hypothesize this to be a direct consequence of the lack of data as well as the need for a more refined architecture, ideally able to handle larger and more detailed images.
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{img/bestimgs.png}
+	\caption{Sample from the best colorations}
+	\label{fig:bestimgs}
 \end{figure}
 
 %------------------------------------------------
@@ -389,13 +448,26 @@ Imagenet.
 Imagenet Large Scale Visual Recognition Challenge (2017).
 \newblock \href{http://www.image-net.org/challenges/LSVRC/}{Imagenet challenge page}.
 
-\bibitem[12]{Fisher:2016}
+\bibitem[12]{GCP}
+Google Cloud Platform.
+\newblock \href{https://cloud.google.com/}{Google Cloud home page}.
+
+\bibitem[13]{Nitish:2017}
+Nitish Shirish Keskar, Dheevatsa Mudigere, Jorge Nocedal, Mikhail Smelyanskiy, Ping Tak Peter Tang (2017). 
+\newblock On large-batch training for deep learning: generalization gap and sharp minima.
+
+\bibitem[14]{Fisher:2016}
 Fisher Yu, Vladlen Koltun (2016).
 \newblock Multi-scale context aggregation by dilated convolutions.
 
-\bibitem[13]{Fisher:2016}
+\bibitem[15]{Fisher:2016}
 Fisher Yu, Vladlen Koltun (2016).
 \newblock Multi-scale context aggregation by dilated convolutions.
+
+\bibitem[16]{Fisher:2016}
+Fisher Yu, Vladlen Koltun (2016).
+\newblock Multi-scale context aggregation by dilated convolutions.
+
 \end{thebibliography}
 
 %----------------------------------------------------------------------------------------
