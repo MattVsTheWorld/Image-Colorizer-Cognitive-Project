@@ -82,7 +82,7 @@
 
 \pretitle{\begin{center}\Huge\bfseries} % Article title formatting
 \posttitle{\end{center}} % Article title closing formatting
-\title{Image Colorization} % Article title
+\title{Automatic Image Colorization} % Article title
 \author{%
 \textsc{Tommaso Loss 1206692} \\
 \textsc{Matteo Marcuzzo 1207249}
@@ -98,7 +98,7 @@
 \renewcommand{\maketitlehookd}{%
 \begin{abstract}
 \noindent
-In this report we aim to cover some of the most recent advances in automatic image colorization of black and white pictures through the use of CNNs, as well as attempt to create our own implementation of one such. We describe the problem in its underconstrained nature, and discuss the approach by Zhang et al. \cite{Zhang:2016} which was used as our main reference. We then proceed to exhibit our implementation and the results we obtained. Lastly, we mention some different approaches and architectures that have surfaced in the most recent years, and make a comparison (MAYBE) (ANCHE NO SECONDO ME).
+In this report, we aim to explore some of the most recent advances in automatic image colorization of black and white pictures through the use of CNNs, as well as showcase our own implementation of one such. We describe the problem in its underconstrained nature, and discuss the approach by Zhang et al. \cite{Zhang:2016}, which was used as our main reference. We then proceed to exhibit our application and the results we obtained. Lastly, we briefly discuss some different approaches and architectures that have surfaced in recent years.
 \end{abstract}
 }
 
@@ -115,12 +115,13 @@ In this report we aim to cover some of the most recent advances in automatic ima
 
 \section{Introduction}
 
-The task of colorizing grayscale images is not a simple one; to our imagination, some details might seem trivial (e.g. the sky is blue), yet some other are seemingly impossible to recover. As argued by Charpiat \cite{Charpiat:2008}, color prediction is, in fact, inherently multimodal - meaning many objects can take several plausible colorizations without a significant change in shape. To convince ourselves of this, it suffices to think a few examples. Apples, trees throughout seasons, artificial objects of various nature - a grayscale depiction of such has lost too much information for us to make a perfectly accurate guess. Nevertheless, we can easily imagine a plausible colorization, and would like an automatic system to be able to do the same.
-Classical methods of the past have relied upon either user input or a large repository of reference images to use at test time. Recent approaches, however, have successfully leveraged the developments of deep convolutional neural networks (CNNs) to obtain a solution that requires no database and is fast at test time Larrson \cite{Larsson:2016}.\\
-The first and key observation is that, in order to colorize images, a system must be able to interpret the semantic information of an image. In other words, it must be able to analyze the composition of the scene (what is in the picture) and where objects are located. Therefore, it comes as no surprise that CNNs are a perfect candidate for this task.\\
-Furthermore, we may observe that colorization can be, in fact, seen as a classification problem where the classes to predict are a number of quantized color values (more on this later). Following Zhang’s \cite{Zhang:2016} implementation, we produced a system that predicts color probabilities over 313 quantized color bins. These probabilities are then used at the time of prediction to produce the final colorization. The prediction itself is produced by a single, feed forward pass through the network. \\
-A last observation is that, usually, not all colors are represented equally in a picture. It’s easy for backgrounds to have a desaturated color that take up a large part of the picture (e.g. cloudy skies, walls, dirt); consequently, a network trained on a large set of images will be biased towards these colors. As suggested by Zhang \cite{Zhang:2016}, we introduce a form of class rebalancing in our loss function to produce brighter colors as well as push towards rarer ones.
+The task of colorizing grayscale images is not a simple one; to our imagination, some details might seem trivial (e.g. the sky is blue), yet some other are seemingly impossible to recover. As argued by Charpiat et al. \cite{Charpiat:2008}, color prediction is, in fact, inherently multimodal - meaning many objects can take several plausible colorizations, even without a significant change in shape. To convince ourselves of this, it suffices to think a few examples. Apples, trees throughout seasons, artificial objects of various nature - a grayscale depiction of such has lost too much information for us to make a perfectly accurate guess. Nevertheless, we can easily imagine a \textit{plausible} colorization, and would like an automatic system to be able to do the same. \\
+Classical methods of the past have either relied upon user input or a large repository of reference images to use at test time. Recent approaches, however, have successfully leveraged the developments of deep convolutional neural networks (CNNs) to obtain a solution that requires no database and is fast at test time \cite{Larsson:2016}.\\
+The first and most important observation is that, in order to colorize images, a system must be able to interpret the semantic information of an image. In other words, it must be able to analyze the composition of the scene (what is in the picture) and where objects are located. Therefore, it comes as no surprise that CNNs are a perfect candidate for this task.\\
+Furthermore, the task of colorization naturally fits a formulation where it is seen as a classification problem. In this, the classes to predict are a number of quantized color values (more on this later). Following the original authors' \cite{Zhang:2016} implementation, we produced a system that predicts color probabilities over 313 quantized color bins. These probabilities are then used at test time to produce the final colorization. The prediction itself is produced by a single, feed forward pass through the network. \\
+A last observation is that, usually, not all colors are represented equally in a picture. It’s fairly common for backgrounds to have a grayish, desaturated color that accounts for a large part of the picture (e.g. cloudy skies, walls, dirt); consequently, a network trained on a large set of images will be biased towards these colors. As suggested by  \cite{Zhang:2016}, we introduce a form of \textit{class rebalancing} in our loss function to produce brighter colors, as well as push towards rarer ones.
 
+\newpage
 
 
 %------------------------------------------------
