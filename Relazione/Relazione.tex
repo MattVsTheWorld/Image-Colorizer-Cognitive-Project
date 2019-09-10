@@ -140,7 +140,7 @@ In the context of colorization as a classification task, usual color spaces such
 \end{figure}
 
 \subsection{Loss function}
-As was briefly previewed, our system is geared to perform a classification task. In particular, its aim is to return probabilities over a set of color classes. One of the most common loss functions used in multinomial classification problems is that of \textit{Cross Entropy} (1), which calculates the average difference between the ground truth T and the predicted probability distribution P.
+As was briefly previewed, our system is geared to perform a classification task. In particular, its aim is to return probabilities over a set of color classes. One of the most common loss functions used in multinomial classification problems is that of \textit{Cross Entropy} (1), which calculates the average difference between the ground truth T and the predicted probability distribution P:
 
 \begin{equation}
 L_{cl}(P,T) = - \sum_{q} \: T_q \: log(P_q)
