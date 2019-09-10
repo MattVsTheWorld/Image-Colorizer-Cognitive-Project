@@ -371,22 +371,49 @@ Our latest run was by far our longest, while previous tests were mostly aimed at
 
 \subsubsection{Results}
 
-Figure \ref{fig:bestimgs} shows some of what we consider the best results of our network. Most importantly, some of these pictures display particularly vivid colors, thanks to the implementation of the class-rebalanced loss function. Furthermore, note how {{pictureofbagni}} exemplifies the multimodal nature of colorization; both images seems plausible, yet the colors are quite distinct from one another.
+Figure \ref{fig:bestimgs} shows some of what we consider the best results of our network. Most importantly, some of these pictures display particularly vivid colors, thanks to the implementation of the class-rebalanced loss function. Furthermore, note how picture \ref{fig:banio} exemplifies the multimodal nature of colorization; both images seems plausible, yet the colors are quite distinct from one another.
 Figure {{}} shows some failure cases. Unsurprisingly, we noticed that our system struggles with objects with a great amount of details. We hypothesize this to be a direct consequence of the lack of data as well as the need for a more refined architecture, ideally able to handle larger and more detailed images.
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{img/bestimgs.png}
-	\caption{Sample from the best colorations}
+	\caption{Sample of the best colorations}
 	\label{fig:bestimgs}
 \end{figure}
 
+\begin{figure}
+	\includegraphics[width=\linewidth]{img/banio.png}
+	\caption{Left original, right ricolorated}
+	\label{fig:banio}
+\end{figure}
+
+\subsection{Final considerations}
+
+We conclude this chapter by making some considerations and comparisons with the original authors’ version. \\
+First and foremost, when taking into consideration the restricted scale of our experiments, we are quite happy with the results obtained. Zhang \cite{Zhang:2016} utilizes the Caffe framework for his implementation, which at times made it difficult to understand some of the finer details of the network. As mentioned, the final version they make available \cite{Zhang:github} was slightly adapted to be able to better detect finer features; we refrained from such adaptations, as they would have slowed our training sessions significantly without necessarily resulting in better performance. \\
+Undoubtedly, the authors had access to much more powerful computational hardware, which allowed them to work with better detailed images as well as more data (as they utilize the full Image Net dataset). Nonetheless, the core of the implementation remains the same. The network in itself is quite deep, which is reflected by how long training had to proceed before stabilizing. While we did try many different betterments for the architecture in itself (performing the same operations, but in different ways), we have reached a point where we firmly believe that the best bet for any improvement is simply to utilize more data.\\
+A last consideration of note can be made about the different uses that automatic image colorization can have. As shown by Zhang \cite{Zhang:2016}, this may be used to aid and improve other systems. The representation learned by this network, though aimed towards colorization, has been proven useful for tasks that are also geared towards the detection of semantic information. Some examples include object classification, detection and segmentation.
+
+
 %------------------------------------------------
 
-\section{Considerations}
+\section{Recent developments}
 
-\subsection{Recent developments}
+In this section, we propose a brief insight on recent developments in the use of Deep Neural Networks for the task of image colorization. 
 
-%------------------------------------------------
+\subsection{User-guided image colorization}
+Expanding upon their previous work, the authors of our main reference paper recently continued their work and proposed a new architecture for the task of colorization \cite{Zhang:2017}. In this case, however, the authors embrace the uncertain nature of the task and suggest that better colorization can be achieved through sparse and limited user input. This allows for real time correction of mistaken colors as well as the possibility to create custom colorizations.
+
+The architecture proposed is similar to the previous, but is expanded upon. In fact, the number of conv-ReLU layers is increased to 10, with the first 8 blocks maintaining the same architecture as before. Furthermore, this shared block utilizes pre-trained weights from \cite{Zhang:2016}, and is then fine tuned during training. The added blocks are trained from scratch, and symmetric shortcut connections are added to help the network recover spatial information.
+We also note the presence of auxiliary networks, though we skip their discussion as they are only present to provide color suggestions to the user.
+
+
+\subsection{Colorization with self-attentive Generative Adversarial Networks}
+
+In his openly available work DeOldify \cite{Jason:github}, software engineer Jason Antic shows an interesting use of self-attention mechanisms and GANs to achieve more precise colorization, as well as displaying some outstanding results in video colorization.\\
+Self-attention mechanisms \cite{Ashish:2017}, which have been shown to produce state-of-the-art results in natural language processing tasks, have recently provided good results in image-related tasks. At their essence, self attention mechanisms provide a way to model long-range dependencies between parts of an image. In other words, while convolutional networks focus on relative location and proximity, attention is able grab contextual information from distant image regions \cite{Chris:guide}; intuitively, this makes the two complementary in nature.\\
+On the other hand, the framework of Generative Adversarial Networks provides a novel way  to approach unsupervised learning in a manner that closely resembles game theory [19]. This framework is comprised of two networks: a generator, which acts much like our network would, and a discriminator, which receives data from both the ground truth and the generator. The task of the discriminator is to predict whether the data is true or artificial. The generator’s objective becomes therefore to maximise the probability that the discriminator is “fooled”, in the sense that it accepts data from the generator as true data.\\
+Very recent works combine these two approaches \cite{Han:2019}, claiming that self-attention can help the generator to recognize finer details as well as allowing the discriminator to more accurately enforce geometric constraints on the global image.\\
+While the original paper that introduced the idea of Self-attentive Generative Adversarial Networks did so with regards to an image generation task, the author of DeOldify demonstrates that suits the colorization task very well. Interestingly enough, the model used for the generator network follows the U-Net architecture, much like Zhang \cite{Zhang:2017} did in its most recent work.
 
 %------------------------------------------------
 
@@ -456,15 +483,31 @@ Google Cloud Platform.
 Nitish Shirish Keskar, Dheevatsa Mudigere, Jorge Nocedal, Mikhail Smelyanskiy, Ping Tak Peter Tang (2017). 
 \newblock On large-batch training for deep learning: generalization gap and sharp minima.
 
-\bibitem[14]{Fisher:2016}
-Fisher Yu, Vladlen Koltun (2016).
-\newblock Multi-scale context aggregation by dilated convolutions.
+\bibitem[14]{Zhang:github}
+Richard Zhang, Phillip Isola, Alexei A. Efros.
+\newblock \href{https://github.com/richzhang/colorization}{Repository}.
 
-\bibitem[15]{Fisher:2016}
-Fisher Yu, Vladlen Koltun (2016).
-\newblock Multi-scale context aggregation by dilated convolutions.
+\bibitem[15]{Zhang:2017}
+Richard Zhang, Jun-Yan Zhu, Phillip Isola, Zinyang Geng, Angela S. Lin, Tianhe Yu, Alexei A. Efros (2017).
+\newblock Real-Time User-Guided Image Colorization with Learned Deep Priors.
 
-\bibitem[16]{Fisher:2016}
+\bibitem[16]{Jason:github}
+Jason Antic.
+\newblock \href{https://github.com/jantic/DeOldify}{DeOldify repository}
+
+\bibitem[17]{Ashish:2017}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin (2017).
+\newblock Attention Is All You Need.
+
+\bibitem[18]{Chris:guide}
+Chris Nicholson.
+\newblock \href{https://skymind.ai/wiki/attention-mechanism-memory-network}{A Beginner's Guide to Attention Mechanisms and Memory Networks}
+
+\bibitem[19]{Han:2019}
+Han Zhang, Ian Goodfellow, Dimitris Metaxas, Augustus Odena (2019).
+\newblock Self-Attention Generative Adversarial Networks.
+
+\bibitem[20]{Fisher:2016}
 Fisher Yu, Vladlen Koltun (2016).
 \newblock Multi-scale context aggregation by dilated convolutions.
 
