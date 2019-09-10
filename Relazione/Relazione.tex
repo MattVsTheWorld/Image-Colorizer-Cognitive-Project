@@ -343,17 +343,17 @@ Of course, we do not claim any scientific validity to our test, as the subject p
 
 \subsection{Hyperparameters}
 
-Once we finalized our implementation, we experimented with a few parameters in order to find the ones that best suited the reduced scale of our experiments.
+Once we finalized our implementation, we worked on tuning some of the main hyperparameters, mainly so that we could find the values that best suited the reduced scale of our experiments. 
 
 \subsubsection{Image size}
-Unsurprisingly, our experiments show that using higher image sizes result in better training. Our earlier tests used smaller images in order to hasten training and fit in the limited memory of our machines, but with our eventual move to the cloud we settled on a size of 256x256 pixels. This allowed to retain a good amount of detail while maintaining a batch size we were comfortable with.
+Unsurprisingly, our experiments show that using higher image sizes results in better training. Our earlier tests used smaller images in order to hasten the process and fit in the limited memory of our local machines, but with our eventual move to the cloud we settled on a size of 256x256 pixels. This allowed to retain a good amount of detail while maintaining a batch size we were comfortable with.
 
 \subsubsection{Batch size}
-Though we tried a few different sizes for the data batches to be used at each training step, we settled on a value of 64. This pushed the limits of our hardware to its maximum (with each batch utilizing almost the full 15GB of GPU memory). While we tried to vary the size of images to be able to create larger batches, we found this compromise to be what gave us the best results. This may quite obviously be because of the higher definition of the images, but recent works also advise against using larger and larger batches \cite{Nitish:2017}, which is something we took into consideration.
+Though we tried a few different sizes for the data batches to be used at each training step, we settled on a value of 64. This pushed the limits of our hardware to its maximum (with each batch utilizing almost the full 15GB of GPU memory available in our latest virtual machine). While we tried to vary the size of images to be able to create larger batches, we found this compromise to be what gave us the best results. This may quite obviously be because of the higher definition of the images, but recent works also advise against using larger and larger batches \cite{Nitish:2017}, which is something we took into consideration.
 
 \subsubsection{Learning rate}
-We tested various learning rates, and settled on a value of  3.16e-5 (with regards to the Adam optimizer). Many values were experimented with, but we found that higher order of magnitudes would quickly become stuck after a rapid descent. Anything significantly lower, on the other hard, would have too much of a hard time exiting points of local optimum.
-The final chosen value allows for training to be fast in the beginning without exhibiting wild swings in the behaviour of the loss value its later parts.
+We tested various learning rates, and settled on a value of  3.16e-5 (using the \textit{Adam} optimizer). Many values were experimented with, but we found that higher order of magnitudes would quickly become stuck after a rapid descent. Anything significantly lower, on the other hard, would have too much of a hard time exiting points of local optimum.
+The final chosen value allows for training to be fast in the beginning without exhibiting wild swings in the behaviour of the loss value in its later epochs.
 
 
 \subsection{Hardware details}
@@ -367,7 +367,7 @@ The following are the hardware specifics for the machines used in our tests. We 
 \item \textbf{OS}: Windows 10 Enterprise.
 \end{itemize}
 
-The aforementioned hardware allowed us to work on small dataset and downsized images, but in the long run did not have the GPU capabilities necessary for our needs, even on a reduced dataset. Namely, we required larger GPU memory in order to work on bigger images as well as working with larger batches. We therefore decided to move our experiments on the Google Cloud Platform \cite{GCP}, where we instantiated a virtual machine with the following specification:
+The aforementioned hardware allowed us to work on small dataset and downsized images, but in the long run did not have the GPU capabilities necessary for our needs, even on a reduced dataset. Namely, we required larger GPU memory in order to work on bigger images as well as working with larger batches. We therefore decided to move our experiments on the Google Cloud Platform \cite{GCP}, where we instantiated a virtual machine with the following specifications:
 
 \begin{itemize}
 	\item \textbf{vCPU}: 4 virtual cores;
@@ -377,7 +377,7 @@ The aforementioned hardware allowed us to work on small dataset and downsized im
 	\item \textbf{OS}: Ubuntu 18.10.
 \end{itemize}
 
-As it may be noticed, we initially performed training on an NVIDIA Tesla P4, but later decided to upgrade to the T4 due to the higher memory capacity.
+As stated above, we initially performed training on an NVIDIA Tesla P4 GPU, but later decided to upgrade to the T4 because of its higher memory capacity.
 
 
 \subsection{Performance and results}
