@@ -256,7 +256,7 @@ f(P) = \frac{\exp(log(P)/T)}{\sum_q \: \exp(log(P_q)/T)}
 \end{equation}
 
 %------------------------------------------------
-
+\newpage
 
 \section{Experimentation}
 In this section, we briefly discuss the actual implementation and the results of our experiments. This includes an overview languages and libraries used, as well as some highlights of the code implementation. We then go on to discuss the finer details of our experiments, such as metrics considered, hyperparameters tested and hardware used. Finally, we present our results and make some considerations based upon such.
@@ -372,7 +372,7 @@ Our latest run was by far our longest, while previous tests were mostly aimed at
 \subsubsection{Results}
 
 Figure \ref{fig:bestimgs} shows some of what we consider the best results of our network. Most importantly, some of these pictures display particularly vivid colors, thanks to the implementation of the class-rebalanced loss function. Furthermore, note how picture \ref{fig:banio} exemplifies the multimodal nature of colorization; both images seems plausible, yet the colors are quite distinct from one another.
-Figure {{}} shows some failure cases. Unsurprisingly, we noticed that our system struggles with objects with a great amount of details. We hypothesize this to be a direct consequence of the lack of data as well as the need for a more refined architecture, ideally able to handle larger and more detailed images.
+Figure \ref{fig:bad} shows some failure cases. Unsurprisingly, we noticed that our system struggles with objects with a great amount of details. We hypothesize this to be a direct consequence of the lack of data as well as the need for a more refined architecture, ideally able to handle larger and more detailed images.
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{img/bestimgs.png}
@@ -386,6 +386,12 @@ Figure {{}} shows some failure cases. Unsurprisingly, we noticed that our system
 	\label{fig:banio}
 \end{figure}
 
+\begin{figure}
+	\includegraphics[width=\linewidth]{img/bad.png}
+	\caption{Sample of bad colorations}
+	\label{fig:bad}
+\end{figure}
+
 \subsection{Final considerations}
 
 We conclude this chapter by making some considerations and comparisons with the original authors’ version. \\
@@ -395,6 +401,8 @@ A last consideration of note can be made about the different uses that automatic
 
 
 %------------------------------------------------
+
+\newpage
 
 \section{Recent developments}
 
@@ -417,6 +425,8 @@ While the original paper that introduced the idea of Self-attentive Generative A
 
 %------------------------------------------------
 
+\newpage
+
 \section{Conclusions}
 
 %------------------------------------------------
@@ -424,6 +434,8 @@ While the original paper that introduced the idea of Self-attentive Generative A
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
 %----------------------------------------------------------------------------------------
+
+\newpage
 
 \begin{thebibliography}{99} % Bibliography - this is intentionally simple in this template
 
