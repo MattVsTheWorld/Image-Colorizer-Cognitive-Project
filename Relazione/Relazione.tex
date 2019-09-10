@@ -411,7 +411,7 @@ We also note the presence of auxiliary networks, though we skip their discussion
 
 In his openly available work DeOldify \cite{Jason:github}, software engineer Jason Antic shows an interesting use of self-attention mechanisms and GANs to achieve more precise colorization, as well as displaying some outstanding results in video colorization.\\
 Self-attention mechanisms \cite{Ashish:2017}, which have been shown to produce state-of-the-art results in natural language processing tasks, have recently provided good results in image-related tasks. At their essence, self attention mechanisms provide a way to model long-range dependencies between parts of an image. In other words, while convolutional networks focus on relative location and proximity, attention is able grab contextual information from distant image regions \cite{Chris:guide}; intuitively, this makes the two complementary in nature.\\
-On the other hand, the framework of Generative Adversarial Networks provides a novel way  to approach unsupervised learning in a manner that closely resembles game theory [19]. This framework is comprised of two networks: a generator, which acts much like our network would, and a discriminator, which receives data from both the ground truth and the generator. The task of the discriminator is to predict whether the data is true or artificial. The generator’s objective becomes therefore to maximise the probability that the discriminator is “fooled”, in the sense that it accepts data from the generator as true data.\\
+On the other hand, the framework of Generative Adversarial Networks provides a novel way  to approach unsupervised learning in a manner that closely resembles game theory \cite{Ian:2014}. This framework is comprised of two networks: a generator, which acts much like our network would, and a discriminator, which receives data from both the ground truth and the generator. The task of the discriminator is to predict whether the data is true or artificial. The generator’s objective becomes therefore to maximise the probability that the discriminator is “fooled”, in the sense that it accepts data from the generator as true data.\\
 Very recent works combine these two approaches \cite{Han:2019}, claiming that self-attention can help the generator to recognize finer details as well as allowing the discriminator to more accurately enforce geometric constraints on the global image.\\
 While the original paper that introduced the idea of Self-attentive Generative Adversarial Networks did so with regards to an image generation task, the author of DeOldify demonstrates that suits the colorization task very well. Interestingly enough, the model used for the generator network follows the U-Net architecture, much like Zhang \cite{Zhang:2017} did in its most recent work.
 
@@ -503,13 +503,16 @@ Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N
 Chris Nicholson.
 \newblock \href{https://skymind.ai/wiki/attention-mechanism-memory-network}{A Beginner's Guide to Attention Mechanisms and Memory Networks}
 
-\bibitem[19]{Han:2019}
+\bibitem[19]{Ian:2014}
+Ian J. Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley,
+Sherjil Ozair, Aaron Courville, Yoshua Bengio (2014).
+\newblock Generative Adversarial Nets.
+
+\bibitem[20]{Han:2019}
 Han Zhang, Ian Goodfellow, Dimitris Metaxas, Augustus Odena (2019).
 \newblock Self-Attention Generative Adversarial Networks.
 
-\bibitem[20]{Fisher:2016}
-Fisher Yu, Vladlen Koltun (2016).
-\newblock Multi-scale context aggregation by dilated convolutions.
+
 
 \end{thebibliography}
 
