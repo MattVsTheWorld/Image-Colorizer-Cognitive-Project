@@ -140,7 +140,12 @@ In the context of colorization as a classification task, usual color spaces such
 \end{figure}
 
 \subsection{Loss function}
-As was briefly previewed, our system is geared to perform a classification task. In particular, its aim is to return probabilities over a set of color classes. One of the most common loss functions used in multinomial classification problems is that of \textit{Cross Entropy}, which calculates the average difference between the ground truth and the predicted probability distribution.
+As was briefly previewed, our system is geared to perform a classification task. In particular, its aim is to return probabilities over a set of color classes. One of the most common loss functions used in multinomial classification problems is that of \textit{Cross Entropy} (1), which calculates the average difference between the ground truth T and the predicted probability distribution P.
+
+\begin{equation}
+L_{cl}(P,T) = - \sum_{q} \: T_q \: log(P_q)
+\end{equation}
+
 This suits the task; however, in order to perform classification we first have to define the classes we want to predict. To this end, we synthesize the color space into a small number of \textbf{ab} pairs (with \textbf{L} = 50). A grid with space size 10 is overlaid onto the color space, thus reducing the number of relevant color pairs by a factor of ten. From the remaining colors, out of gamut ones are removed to obtain the final 313 color classes used in the classification task (figure \ref{fig:quantized}).
 
 
@@ -152,10 +157,6 @@ This suits the task; however, in order to perform classification we first have t
 
 
 In order to make a comparison, however, we now require ground truth values in the same form of the predicted probabilities. The real color values are therefore transformed into probability distributions. This is achieved through \textit{soft-encoding}, by mapping each pixel color to its five nearest quantized \textbf{ab} color pairs and giving each one a weight based on the euclidean distance from the original color. Such distance-weights are then smoothed with a Gaussian kernel (with $\sigma=5$). [[ref 31 del paper]]
-
-\begin{equation}
-L_{cl}(P,T) = - \sum_{q} \: T_q \: log(P_q)
-\end{equation}
 
 However, that alone is not enough to obtain a meaningful colorization. This is because of the inherently uneven color distribution; in particular, background and foreground colors such as blue and green are much more prevalent than rare colors like purple. The resulting model will therefore be biased to more common colors, neglecting rare ones. 
 The solution to this problem proposed by Zhang \cite{Zhang:2016} is to reweight the probabilities by a factor based on the scarcity of the color. This process, named class-rebalancing, allows us to obtain our final loss formulation:
