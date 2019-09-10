@@ -21,7 +21,7 @@
 
 \documentclass[twoside,twocolumn]{article}
 
-\usepackage{blindtext} % Package to generate dummy text throughout this template 
+\usepackage{blindtext} % Package to generate dummy text throughout this template
 
 \usepackage[sc]{mathpazo} % Use the Palatino font
 \usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
@@ -140,8 +140,13 @@ In the context of colorization as a classification task, usual color spaces such
 \end{figure}
 
 \subsection{Loss function}
-As was briefly previewed, our system is in fact a classification model which returns probabilities over a set of color classes. One of the most commonly used loss functions in multinomial classification problems is that of \textit{Cross Entropy}, which calculates the average difference between the ground truth and the predicted probability distribution. 
-In order to perform classification, however, we first have to define the classes we want to predict. To do this, we synthesize the color space into a small number of AB pairs (with \textbf{L} = 50). A grid with space size 10 is overlaid onto the color space, thus reducing the number of relevant color pairs by a factor of ten. From the remaining colors, out of gamut ones are removed to obtain the final 313 color classes used in the classification task (figure \ref{fig:quantized}).
+As was briefly previewed, our system is geared to perform a classification task. In particular, its aim is to return probabilities over a set of color classes. One of the most common loss functions used in multinomial classification problems is that of \textit{Cross Entropy} (1), which calculates the average difference between the ground truth T and the predicted probability distribution P:
+
+\begin{equation}
+L_{cl}(P,T) = - \sum_{q} \: T_q \: log(P_q)
+\end{equation}
+
+This suits the task; however, in order to perform classification we first have to define the classes we want to predict. To this end, we synthesize the color space into a small number of \textbf{ab} pairs (with \textbf{L} = 50). A grid with space size 10 is overlaid onto the color space, thus reducing the number of relevant color pairs by a factor of ten. From the remaining colors, out of gamut ones are removed to obtain the final 313 color classes used in the classification task (figure \ref{fig:quantized}).
 
 
 \begin{figure} [h]
@@ -194,7 +199,7 @@ Lastly, note the presence of dilated convolutions \cite{Fisher:2016} in blocks 5
 \begin{tabular}{|c|c|c|c|c|c|}
 	\hline
 	\hline
-	Layer & Filters & Spac. Res. & Kernel size & Stride & Dilation\\ 
+	Layer & Filters & Spac. Res. & Kernel size & Stride & Dilation\\
 	\hline
 	\hline
 	\multicolumn{6}{|c|}{input data (with size e.g. 224 * 224)}\\ \hline
@@ -230,7 +235,7 @@ Lastly, note the presence of dilated convolutions \cite{Fisher:2016} in blocks 5
 	conv8\_2 & 128 & 56 & 3x3 & (1,1) & 1 \\ \hline
 	conv8\_3 & 128 & 56 & 3x3 & (1,1) & 1 \\ \hline
 	\multicolumn{6}{|c|}{Softmax Layer}\\ \hline
-	
+
 \end{tabular}
 \end{table*}
 
@@ -260,10 +265,10 @@ Once the model has been trained, prediction is done through a single, feed forwa
 
 It remains to decide how to use this information to produce our colorization. One choice is to take the most frequent and probable values; while this idea results very vibrant colors, it often produces spatially inconsistent results and “hard transitions” from one color to the other. A better approach could therefore be to take the mean over each of the quantized bins, weighing them by their probability. This ensures softer transitions, but runs into the unwanted consequence that colors become desaturated, as too much importance is attributed to lower probability colors.
 
-The solution proposed by Zhang \cite{Zhang:2016} attempts to have the best of both worlds. The authors suggest taking what they name “annealed mean” of the distribution. This consists of an interpolation of the softmax distribution by means of a temperature value T, and consequently taking the mean of the result. Strictly speaking, this translates into dividing each value by the aforementioned temperature value, which ranges from 0 to 1 (the suggested value is 0.38, which we adhered to). This ensures that more importance is given to high probability values, resulting into the vibrant colorization desired as well as better spatial consistency. 
+The solution proposed by Zhang \cite{Zhang:2016} attempts to have the best of both worlds. The authors suggest taking what they name “annealed mean” of the distribution. This consists of an interpolation of the softmax distribution by means of a temperature value T, and consequently taking the mean of the result. Strictly speaking, this translates into dividing each value by the aforementioned temperature value, which ranges from 0 to 1 (the suggested value is 0.38, which we adhered to). This ensures that more importance is given to high probability values, resulting into the vibrant colorization desired as well as better spatial consistency.
 
 \begin{equation}
-H(P) = \EX[f(P)] 
+H(P) = \EX[f(P)]
 \end{equation}
 
 \begin{equation}
@@ -305,7 +310,7 @@ With regards to the prior color probability (used in the class-rebalancing metho
 
 \subsection{Metrics}
 
-As the original author of the papers mention \cite{Zhang:2016}, evaluating the quality of synthesized images is a difficult task in itself. Common qualitative metrics such as RMS error on pixel values fail to capture the visual realism, which is what the system is instead trying to achieve. 
+As the original author of the papers mention \cite{Zhang:2016}, evaluating the quality of synthesized images is a difficult task in itself. Common qualitative metrics such as RMS error on pixel values fail to capture the visual realism, which is what the system is instead trying to achieve.
 One could nonetheless measure the raw prediction accuracy (L2 distance from the ground truth in the \textbf{AB} color space), but we decided against this as it does not reflect the final aim of the system (that of a plausible colorization). In fact, Zhang \cite{Zhang:2016} shows that a metric of the sort would give a rather good score even for an image fully colorized in gray, which is not ideal.\\
 As a result, the best way to verify the quality of the result is to perform a test on human subjects. The scope of our experiment is nowhere near as rigorous as Zhang counterpart, however we found it useful to verify a practical application of the model results.\\
 We asked our seventeen partecipants to identify the real images between the colorized version of a picture and the original. Each couple of pictures were shown for five seconds and in total there were 20 choices to be made.
@@ -329,8 +334,8 @@ Unsurprisingly, our experiments show that using higher image sizes result in bet
 Though we tried a few different sizes for the data batches to be used at each training step, we settled on a value of 64. This pushed the limits of our hardware to its maximum (with each batch utilizing almost the full 15GB of GPU memory). While we tried to vary the size of images to be able to create larger batches, we found this compromise to be what gave us the best results. This may quite obviously be because of the higher definition of the images, but recent works also advise against using larger and larger batches \cite{Nitish:2017}, which is something we took into consideration.
 
 \subsubsection{Learning rate}
-We tested various learning rates, and settled on a value of  3.16e-5 (with regards to the Adam optimizer). Many values were experimented with, but we found that higher order of magnitudes would quickly become stuck after a rapid descent. Anything significantly lower, on the other hard, would have too much of a hard time exiting points of local optimum. 
-The final chosen value allows for training to be fast in the beginning without exhibiting wild swings in the behaviour of the loss value its later parts. 
+We tested various learning rates, and settled on a value of  3.16e-5 (with regards to the Adam optimizer). Many values were experimented with, but we found that higher order of magnitudes would quickly become stuck after a rapid descent. Anything significantly lower, on the other hard, would have too much of a hard time exiting points of local optimum.
+The final chosen value allows for training to be fast in the beginning without exhibiting wild swings in the behaviour of the loss value its later parts.
 
 
 \subsection{Hardware details}
@@ -338,7 +343,7 @@ The final chosen value allows for training to be fast in the beginning without e
 The following are the hardware specifics for the machines used in our tests. We performed initial tests and training on one of our home machines, the details of which are as follows:
 \begin{itemize}
 \item \textbf{CPU}: AMD Ryzen 5 1600x  6-core (3.6GHz);
-\item \textbf{GPU}: NVIDIA GeForce GTX 970 (4 GB GDDR5); 
+\item \textbf{GPU}: NVIDIA GeForce GTX 970 (4 GB GDDR5);
 \item \textbf{Memory}: 16 GB DDR4;
 \item \textbf{Persistency}: 500GB Force MP510 M.2 SSD;
 \item \textbf{OS}: Windows 10 Enterprise.
@@ -348,7 +353,7 @@ The aforementioned hardware allowed us to work on small dataset and downsized im
 
 \begin{itemize}
 	\item \textbf{vCPU}: 4 virtual cores;
-	\item \textbf{GPU}: NVIDIA Tesla P4 (8 GB GDDR5) / T4 (16 GB GDDR6) (later tests); 
+	\item \textbf{GPU}: NVIDIA Tesla P4 (8 GB GDDR5) / T4 (16 GB GDDR6) (later tests);
 	\item \textbf{Memory}: 15GB RAM;
 	\item \textbf{Persistency}: 65 GB standard persistent disk (HDD);
 	\item \textbf{OS}: Ubuntu 18.10.
@@ -363,12 +368,12 @@ What follows is a brief description of our experimental results. This includes a
 
 \subsubsection{Loss}
 
-As previously discussed in the metrics paragraph, commonly used metrics are hard or impossible to apply to a problem of this kind, as the final aim of the system is to produce a plausible result. While it may seem unsatisfactory to simply observe a loss value decrease, one has to remember that this value represents the mean difference between the predicted probability distribution of colors and the actual distribution obtained by the soft encoding of the ground truth. 
+As previously discussed in the metrics paragraph, commonly used metrics are hard or impossible to apply to a problem of this kind, as the final aim of the system is to produce a plausible result. While it may seem unsatisfactory to simply observe a loss value decrease, one has to remember that this value represents the mean difference between the predicted probability distribution of colors and the actual distribution obtained by the soft encoding of the ground truth.
 We found that the system first produces some acceptable results below the value of 5, when it gains the confidence to attempt some vivid colorizations. In earlier epochs resulting pictures are still desaturated and grayish. Learning slows massively around the value of 4, where it begins a slow descent. Finally, in later epochs the system becomes more adept at recognizing shapes and coloring them correctly.
 
 \subsubsection{Training runs}
 
-Figure \ref{fig:loss} and \ref{fig:valloss} display the change in loss on the training and validation set throughout various epochs. These graphs refer to our latest training session, performed on our full 20gb dataset on an NVIDIA Tesla T4. The test ran for almost 67 hours, after which we decided to stop the instance as we began to see no improvement. As a matter of fact, later models struggled to improve on validation loss, and appeared to be overfitting on certain color patterns. 
+Figure \ref{fig:loss} and \ref{fig:valloss} display the change in loss on the training and validation set throughout various epochs. These graphs refer to our latest training session, performed on our full 20gb dataset on an NVIDIA Tesla T4. The test ran for almost 67 hours, after which we decided to stop the instance as we began to see no improvement. As a matter of fact, later models struggled to improve on validation loss, and appeared to be overfitting on certain color patterns.
 Our latest run was by far our longest, while previous tests were mostly aimed at finding a good balance between our hyperparameters. Our experimental results confirm the well known fact that smaller datasets provide insufficient information to the network. Practically speaking, we noted that the loss value would converge much faster and at higher values, and would thereon be unable to improve. Furthermore, with less images given to the network, a gap between training and validation loss would quickly appear, with the latter getting stuck at higher values (a clear indication of overfitting).
 
 
@@ -421,7 +426,7 @@ A last consideration of note can be made about the different uses that automatic
 
 \section{Recent developments}
 
-In this section, we propose a brief insight on recent developments in the use of Deep Neural Networks for the task of image colorization. 
+In this section, we propose a brief insight on recent developments in the use of Deep Neural Networks for the task of image colorization.
 
 \subsection{User-guided image colorization}
 Expanding upon their previous work, the authors of our main reference paper recently continued their work and proposed a new architecture for the task of colorization \cite{Zhang:2017}. In this case, however, the authors embrace the uncertain nature of the task and suggest that better colorization can be achieved through sparse and limited user input. This allows for real time correction of mistaken colors as well as the possibility to create custom colorizations.
@@ -463,7 +468,7 @@ Works on this particular topic are very recent, and as such improvements are bei
 \bibitem[1]{Zhang:2016}
 Richard Zhang, Phillip Isola, Alexei A. Efros (2016).
 \newblock Colorful Image Colorization.
- 
+
 \bibitem[2]{Charpiat:2008}
 Charpiat, G., Hofmann, M., Scholkopf, B. (2008).
 \newblock Automatic image colorization via multimodal
@@ -517,7 +522,7 @@ Google Cloud Platform.
 \newblock \href{https://cloud.google.com/}{Google Cloud home page}.
 
 \bibitem[14]{Nitish:2017}
-Nitish Shirish Keskar, Dheevatsa Mudigere, Jorge Nocedal, Mikhail Smelyanskiy, Ping Tak Peter Tang (2017). 
+Nitish Shirish Keskar, Dheevatsa Mudigere, Jorge Nocedal, Mikhail Smelyanskiy, Ping Tak Peter Tang (2017).
 \newblock On large-batch training for deep learning: generalization gap and sharp minima.
 
 \bibitem[15]{Zhang:github}
