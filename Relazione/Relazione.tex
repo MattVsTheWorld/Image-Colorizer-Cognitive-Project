@@ -271,18 +271,18 @@ Since the data required quite a bit of preprocessing, the loading of images from
 
 \subsection{Dataset}
 
-While we initially planned on using the full Image Net dataset \cite{Imagenet}, we soon realized we lacked the computational power to process it in its full size, even after we decided to move our experiments on the Google Cloud Platform \cite{GCP} (more on this later). We therefore decided on a suitable subset, which we increased from time to time as we gained confidence in the correctness of our implementation. Our final dataset is comprised of 175’333 images (roughly 20gb worth of pictures) randomly and evenly selected from the 2017 Large Scale Visual Recognition Challenge Image Net dataset \cite{ImNetChallenge:2017}. Of this, 99\% was used as a training set, while the remaining 1\% for validation. While these percentages might seem odd, we found many implementations used even less images for validation. We found this value had the least discrepancy between the values of loss and validation loss, while still allowing validation to be performed in a timely manner.
-
+While we initially planned on using the full Image Net dataset \cite{Imagenet}, we soon realized we lacked the computational power to process it in its full size, even after we decided to move our experiments on the Google Cloud Platform \cite{GCP} (more on this later). We therefore decided on a suitable subset, which we increased from time to time as we gained confidence in the correctness of our implementation. Our final dataset is comprised of 175’333 images (roughly 20gb worth of pictures) randomly and evenly selected from the 2017 Large Scale Visual Recognition Challenge Image Net dataset \cite{ImNetChallenge:2017}. Of this, 99\% was used as a training set, while the remaining 1\% for validation. While these percentages might seem odd, we found many implementations used even less images for validation. We found this value had the least discrepancy between the values of loss and validation loss, while still allowing validation to be performed in a timely manner.\\
 With regards to the prior color probability (used in the class-rebalancing method), while we did write our own implementation and initially used it, our final implementation utilizes the prior probabilities calculated by Zhang \cite{Zhang:2016}, as it is made publicly available by the authors. This choice may again be justified by our lack of computational power, as we could only manage to calculate such prior on either a subset of Image Net or on greatly downscaled images. Nevertheless, if we make a comparison, our prior factor \ref{fig:oursprior} does not differ greatly from the original authors’ \ref{fig:valloss} . We decided nonetheless to utilize the more accurate data, as it is based on the full Image Net dataset.
 
+\newpage
 
-\begin{figure}
+\begin{figure}[h]
 	\includegraphics[width=\linewidth]{img/ours.png}
 	\caption{Ours color prior results}
 	\label{fig:oursprior}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[h]
 	\includegraphics[width=\linewidth]{img/zhang.png}
 	\caption{Zhang \cite{Zhang:2016} color prior results}
 	\label{fig:zhangprior}
@@ -357,13 +357,13 @@ Figure \ref{fig:loss} and \ref{fig:valloss} display the change in loss on the tr
 Our latest run was by far our longest, while previous tests were mostly aimed at finding a good balance between our hyperparameters. Our experimental results confirm the well known fact that smaller datasets provide insufficient information to the network. Practically speaking, we noted that the loss value would converge much faster and at higher values, and would thereon be unable to improve. Furthermore, with less images given to the network, a gap between training and validation loss would quickly appear, with the latter getting stuck at higher values (a clear indication of overfitting).
 
 
-\begin{figure}
+\begin{figure}[h]
 	\includegraphics[width=\linewidth]{img/loss.png}
 	\caption{Loss, smoothing=0.6}
 	\label{fig:loss}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[h]
 	\includegraphics[width=\linewidth]{img/val_loss.png}
 	\caption{Validation Loss, smoothing=0.6}
 	\label{fig:valloss}
@@ -371,7 +371,7 @@ Our latest run was by far our longest, while previous tests were mostly aimed at
 
 \subsubsection{Results}
 
-Figure \ref{fig:bestimgs} shows some of what we consider the best results of our network. Most importantly, some of these pictures display particularly vivid colors, thanks to the implementation of the class-rebalanced loss function. Furthermore, note how picture \ref{fig:banio} exemplifies the multimodal nature of colorization; both images seems plausible, yet the colors are quite distinct from one another.
+Figure \ref{fig:bestimgs} shows some of what we consider the best results of our network. Most importantly, some of these pictures display particularly vivid colors, thanks to the implementation of the class-rebalanced loss function. Furthermore, note how picture \ref{fig:banio} exemplifies the multimodal nature of colorization; both images seems plausible, yet the colors are quite distinct from one another.\\
 Figure \ref{fig:bad} shows some failure cases. Unsurprisingly, we noticed that our system struggles with objects with a great amount of details. We hypothesize this to be a direct consequence of the lack of data as well as the need for a more refined architecture, ideally able to handle larger and more detailed images.
 
 \begin{figure}
