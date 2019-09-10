@@ -136,7 +136,7 @@ In the context of colorization as a classification task, usual color spaces such
 
 \begin{figure} [h]
 	\includegraphics[width=\linewidth]{img/cielab.jpg}
-	\caption{CIE-Lab color space.}
+	\caption{CIE-Lab color space}
 	\label{fig:cielab}
 \end{figure}
 
@@ -277,7 +277,7 @@ Once the model has been trained, prediction is done through a single, feed forwa
 
 It remains to decide how to use this information to produce our colorization. One choice is to take the most frequent and probable values; while this idea results very vibrant colors, it often produces spatially inconsistent results and “hard transitions” from one color to the other. A better approach could therefore be to take the mean over each of the quantized bins, weighing them by their probability. This ensures softer transitions, but runs into the unwanted consequence that colors become desaturated, as too much importance is attributed to lower probability colors.
 
-The solution proposed in \cite{Zhang:2016} attempts to have the best of both worlds. The authors suggest taking what they name the “\textit{annealed mean}” of the distribution. This consists of an interpolation of the softmax distribution by means of a temperature value T, and consequently taking the mean of the result. Strictly speaking, this translates into dividing each value by the aforementioned temperature value, which ranges from 0 to 1 (the suggested value is 0.38, which we adhered to) (6). This ensures that more importance is given to high probability values, resulting into the vibrant colorization desired as well as better spatial consistency.
+The solution proposed in \cite{Zhang:2016} attempts to have the best of both worlds. The authors suggest taking what they name the “\textit{annealed mean}” of the distribution. This consists of an interpolation of the softmax distribution by means of a temperature value T, and consequently taking the mean of the result (6). Strictly speaking, this translates into dividing each value by the aforementioned temperature value, which ranges from 0 to 1 (the suggested value is 0.38, which we adhered to). This ensures that more importance is given to high probability values, resulting into the vibrant colorization desired as well as better spatial consistency.
 
 \footnotetext{The .5 stride is simulated through a 2d upsampling operation. Earlier implementations made instead use of a deconvolutional layer, but we found this other approach to work better in practice.}
 
@@ -293,47 +293,51 @@ f(P) = \frac{\exp(log(P)/T)}{\sum_q \: \exp(log(P_q)/T)}
 \newpage
 
 \section{Experimentation}
-In this section, we briefly discuss the actual implementation and the results of our experiments. This includes an overview languages and libraries used, as well as some highlights of the code implementation. We then go on to discuss the finer details of our experiments, such as metrics considered, hyperparameters tested and hardware used. Finally, we present our results and make some considerations based upon such.
+In this section, we discuss the actual implementation and the results of our experiments. This includes an overview languages and libraries used, as well as some highlights of the code implementation. We then go on to discuss the finer details of our experiments, such as metrics considered, hyperparameters tested and hardware used. Finally, we present our results and make some considerations based upon such.
 
 
 \subsection{Implementation}
 
-The full implementation was written to work with \texttt{Python 2.7}, and is based on \texttt{Tensorflow 1.14} and \texttt{Keras}. While we initially set out to create a pure \texttt{Tensorflow} implementation, we soon realized that \texttt{Keras} was the better option, as it allowed us to implement in simpler yet more efficient fashion.
+The full implementation was written to work with \texttt{Python 2.7}, and is based on \texttt{Tensorflow 1.14} and \texttt{Keras}. While we initially set out to create a pure \texttt{Tensorflow} implementation, we soon realized that \texttt{Keras} was the better option, as it allowed us to work in a simpler yet more efficient fashion.
 
-Since the data required quite a bit of preprocessing, the loading of images from file as well as the creation of batches is handled by a custom class, \texttt{DataGenSequence}. Through this, the system may load any color image of a given format and generate training data by stripping it of its \textbf{AB} channels, as well as generating a ground truth through a soft-encoding method, called \texttt{get\_soft\_encoding}. This also allows for extra flexibility, as images may be resized and converted in format at run time. While on larger datasets it would most likely have been more efficient to save the preprocessed data, we often encountered the need to make changes to our input data (swapping between datasets as well as image sizes) due to our computational constraints. Thus, our implementation was merely aimed towards simplifying our tests.
+Since the data required quite a bit of preprocessing, the loading of images from file as well as the creation of batches is handled by a custom class, \texttt{DataGenSequence}. Through this, the system may load any color image of a given format and generate training data by stripping it of its \textbf{ab} channels, as well as generating a ground truth through a \textit{soft-encoding} method, namely \texttt{get\_soft\_encoding}.
 
+This allows for extra flexibility, as images may be resized and converted in format at run time. While we realize that larger datasets would most certainly benefit in storing the preprocessed data for efficiency reasons, we often encountered the need to make changes to our training data (i.e. swapping between datasets as well as image sizes) due to our computational constraints. Thus, our implementation was mostly intended to simplify our tests.
 
-\subsection{Dataset}
-
-While we initially planned on using the full Image Net dataset \cite{Imagenet}, we soon realized we lacked the computational power to process it in its full size, even after we decided to move our experiments on the Google Cloud Platform \cite{GCP} (more on this later). We therefore decided on a suitable subset, which we increased from time to time as we gained confidence in the correctness of our implementation. Our final dataset is comprised of 175’333 images (roughly 20gb worth of pictures) randomly and evenly selected from the 2017 Large Scale Visual Recognition Challenge Image Net dataset \cite{ImNetChallenge:2017}. Of this, 99\% was used as a training set, while the remaining 1\% for validation. While these percentages might seem odd, we found many implementations used even less images for validation. We found this value had the least discrepancy between the values of loss and validation loss, while still allowing validation to be performed in a timely manner.\\
-With regards to the prior color probability (used in the class rebalancing method), while we did write our own implementation and initially used it, our final implementation utilizes the prior probabilities calculated by Zhang \cite{Zhang:2016}, as it is made publicly available by the authors. This choice may again be justified by our lack of computational power, as we could only manage to calculate such prior on either a subset of Image Net or on greatly downscaled images. Nevertheless, if we make a comparison, our prior factor \ref{fig:oursprior} does not differ greatly from the original authors’ \ref{fig:valloss} . We decided nonetheless to utilize the more accurate data, as it is based on the full Image Net dataset.
-
-\newpage
-
-\begin{figure}[h]
+\begin{figure} [h]
 	\includegraphics[width=\linewidth]{img/ours.png}
-	\caption{Our color prior results}
+	\caption{Prior probability of quantized colors, as calculated on our dataset}
 	\label{fig:oursprior}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure} [h]
 	\includegraphics[width=\linewidth]{img/zhang.png}
-	\caption{Zhang \cite{Zhang:2016} color prior results}
+	\caption{Zhang et al. \cite{Zhang:github}'s prior probability results}
 	\label{fig:zhangprior}
 \end{figure}
 
+\subsection{Dataset}
+
+While we initially planned on using the full Image Net dataset \cite{Imagenet}, we soon realized we lacked the computational power to process it in its full size, even after we decided to move our experiments on the Google Cloud Platform \cite{GCP} (more on this later). We therefore decided on a suitable subset, which we increased from time to time as we gained confidence in the correctness of our implementation. Our final dataset contains 175’333 images (roughly 20gb worth of pictures) randomly and evenly selected from the 2017 Large Scale Visual Recognition Challenge Image Net dataset \cite{ImNetChallenge:2017}. Of this, 99\% was used as a training set, while the remaining 1\% for validation. While these percentages might seem odd, we found many implementations used even less images for validation. The authors \cite{Zhang:2016} themselves utilize a dedicated validation set of 10k images, over the 1.3M used for their training. In our experience, we found that our proposed value presented the least discrepancy overall between the values of loss and validation loss, while still allowing validation to be performed in a timely manner.
+
+
+Some remarks need to be made with regards to the prior color probability of the dataset (used in the class rebalancing method). While we did write our own implementation and initially used it, our final version utilizes the results as calculated by \cite{Zhang:2016}, which are publicly available \cite{Zhang:github}. Due to our limited resources, we could only manage to calculate such prior on either a small subset of our dataset or on greatly downscaled images. It is worth mentioning that, if we make a comparison, our prior factor (figure \ref{fig:oursprior}) does not differ greatly from the original authors’ (figure \ref{fig:zhangprior}). We decided nonetheless to utilize the more accurate data, as it is based on the full Image Net dataset.
+
+
+
+
 \subsection{Metrics}
 
-As the original author of the papers mention \cite{Zhang:2016}, evaluating the quality of synthesized images is a difficult task in itself. Common qualitative metrics such as RMS error on pixel values fail to capture the visual realism, which is what the system is instead trying to achieve.
-One could nonetheless measure the raw prediction accuracy (L2 distance from the ground truth in the \textbf{AB} color space), but we decided against this as it does not reflect the final aim of the system (that of a plausible colorization). In fact, Zhang \cite{Zhang:2016} shows that a metric of the sort would give a rather good score even for an image fully colorized in gray, which is not ideal.\\
-As a result, the best way to verify the quality of the result is to perform a test on human subjects. The scope of our experiment is nowhere near as rigorous as Zhang counterpart, however we found it useful to verify a practical application of the model results.\\
-We asked our seventeen partecipants to identify the real images between the colorized version of a picture and the original. Each couple of pictures were shown for five seconds and in total there were 20 choices to be made.
-Picture \ref{fig:testres} summarizes the results, in particular the maximum number of errors commited is 50\% (as if all the choices were made randomly between two evenly realistical images), whereas the minimun is 0\%. The average fooling percentage is 30\%, almost reaching Zhang \cite{Zhang:2016} result of 32\%.\\
-Of course the correcteness of these tests is not guaranteed considered the low number of subjects but nontheless the results are a reliable indicator of the goodness of the model.
+As the original author of the papers claim \cite{Zhang:2016}, evaluating the quality of synthesized images is a difficult task in itself. Common qualitative metrics, such as RMS error on pixel values, fail to capture the notion of visual realism, which is what the system is instead trying to achieve.
+One could nonetheless measure the raw prediction accuracy (L2 distance from the ground truth in the \textbf{ab} color space), but we decided against this as it does not reflect the final aim of the system (that of a plausible colorization). In fact, Zhang et al. \cite{Zhang:2016} show that a metric of the sort would give a rather good score even for an image fully colorized in gray, which is not ideal.\\
+As a result, the best way to verify the quality of the result is to perform a test on human subjects. While the scope of our experiments is nowhere near as rigorous as the referenced counterpart, we thought it would be interesting to put the results of our model to use by attempting our own version of the proposed tests.\\
+We asked seventeen partecipants to identify real images given a choice between our colorized version of a picture and its original. Each pair of pictures were shown for five seconds and 20 pairs were shown in total.
+Figure \ref{fig:testres} summarizes the results. The highest number of mistakes made is 50\% (as if all the choices were made randomly between two equally realistic images), whereas the best achieving subjects managed to have an error rate of 0\%. Our average fooling percentage is 30\%, which resembles the original authors' result of 32\%.\\
+Of course, we do not claim any scientific validity to our test, as the subject pool was far too small to prove of any significance. Nonetheless, the results are at least promising, and provide some positive feedback on the goodness of the model.
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{img/graficotest.png}
-	\caption{Tests results}
+	\caption{Human "fooling" test results}
 	\label{fig:testres}
 \end{figure}
 
@@ -410,19 +414,19 @@ Figure \ref{fig:bad} shows some failure cases. Unsurprisingly, we noticed that o
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{img/bestimgs.png}
-	\caption{Sample of the best colorations}
+	\caption{A sample of our best colorizations}
 	\label{fig:bestimgs}
 \end{figure}
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{img/banio.png}
-	\caption{Left original, right ricolorated}
+	\caption{To the left, the original image; \\ To the right, our colorization}
 	\label{fig:banio}
 \end{figure}
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{img/bad.png}
-	\caption{Sample of bad colorations}
+	\caption{Unsuccessful colorizations from out network}
 	\label{fig:bad}
 \end{figure}
 
@@ -468,12 +472,13 @@ Considering our novice state with regards to the world of deep learning, we are 
 All things considered, image colorization - much like many image related tasks - is difficult. Though we argued for specific issues such as the multimodal nature of colors, much of this difficulty comes from the inherent necessity for big data. In addition, images in themselves are a particularly rich medium of information, which further amplifies these computational challenges.\\
 Works on this particular topic are very recent, and as such improvements are being published every passing year. We concluded by showcasing some of the most recent developments in the field, and are excited to see the results they will bring.
 
-
+\newpage
 %------------------------------------------------
 
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
 %----------------------------------------------------------------------------------------
+
 
 \newpage
 
