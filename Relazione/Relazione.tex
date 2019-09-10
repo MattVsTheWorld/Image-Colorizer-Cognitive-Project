@@ -178,15 +178,15 @@ Where $p$ is the smoothed empirical distribution and $Q$ is the number of quanti
 
 \subsection{Network architecture}
 
-The network architecture follows the one proposed by Zhang \cite{Zhang:2016}, Table \ref{tab:network}. The network itself is comprised of 30 layers, which are either 2D convolutional layers or batch normalization layers.
+The network architecture we describe and implement follows the one proposed by Zhang et al.\cite{Zhang:2016}. Table \ref{tab:network} gives an overview of its structure and parameters. The network itself is comprised of 30 layers, which are either 2D convolutional layers or batch normalization layers.
 
 
 \subsubsection{Layers}
-The network is divided into 8 layer blocks, all of which are followed by a batch normalization layer (except for the last one, where a 1x1 conv and cross-entropy layer is imposed). The following table describes the layers and their parameter values.\\
-Each block contains 2 or 3 convolutional layers, all of which use a \textit{ReLU} activation function. As shown in the table, the number of filters becomes quite high, leading to a large number of trainable parameters (around 25 million). Though our implementation closely follows the one suggested by Zhang \cite{Zhang:2016} in the official paper, we note that the authors seem to have in practice decided for an even larger number of filters, specifically in the last two blocks. Though we did not directly test this, our guess is that these may have been added in an attempt to detect finer features.\\
-As mentioned, batch normalization layers are applied after each convolutional block. This ensures that training may be performed with higher learning rates and with less worry with regards to choice of initialization. In short, the purpose of these layers is to normalize the activations of the previous layers at each batch, hence counteracting the internal covariate shift problem caused by layers having too different distribution of activations \cite{Sergey:2015}.\\
-In regards to the spatial resolution of output, note how computational stride is used to downsample earlier blocks (namely, blocks 1 to 3). This is consistent with some recent studies \cite{Jost:2015}, which advise against the use of once popular pooling layers and instead suggest downsampling through larger stride when required. At the beginning of the last block, a 2D spatial upsampling is instead applied, effectively doubling the spatial resolution before the convolution. \\
-Lastly, note the presence of dilated convolutions \cite{Fisher:2016} in blocks 5 and 6. This type of convolution has been shown to help in applications with dense predictions such as ours, since this approach to colorization is implemented as a classification problem for each pixel. As a very brief overview, what this approach allows us to do is to integrate information from different spatial scales much more aggressively,  forgoing the need to build a larger, multi-scale CNNs.
+The network is divided into 8 layer blocks, all of which are followed by a batch normalization layer. An exception is made for the last block, where a 1x1 conv and cross-entropy layer is imposed (the \textit{softmax} layer). \\
+Each block contains 2 or 3 convolutional layers, all of which use a \textit{ReLU} activation function. In order to interpret the semantic information of an image, the network is required to learn a significant number of features. Therefore, the number of filters (correspondingly, the depth of the output volume) becomes quite large throughout the architecture, leading to a considerably high number of trainable parameters (around 25 million). Notably, we found that the authors' actual implementation \cite{Zhang:github} adopts an even greater number of filters, specifically in the last two blocks. Though we decided to adhere to the original formulation, our guess is that this change may have been an attempt to distinguish even finer features.\\
+Batch normalization layers are applied after each convolutional block. This ensures that training may be performed with higher learning rates and with less worry with regards to the choice of initialization. In essence, the purpose of these layers is to normalize the activations of the previous layers at each batch, hence counteracting what is known as the \textit{internal covariate shift problem} - an issue caused by layers having activation distributions that are too different \cite{Sergey:2015}.\\
+In regards to the spatial resolution of output, note how computational stride is used to downsample earlier blocks (namely, blocks 1 to 3). This is consistent with some recent studies \cite{Jost:2015}, which advise against the use of once popular pooling layers and instead suggest downsampling through larger stride when required. At the beginning of the last block, a 2D spatial upsampling is instead applied, effectively doubling the spatial resolution before the convolutional layers. \\
+Lastly, note the presence of dilated convolutions \cite{Fisher:2016} in blocks 5 and 6. This type of convolution has been shown to help in applications with dense predictions such as ours, since this approach to colorization is implemented as a classification problem for each pixel. At its core, what this approach allows us to do is to integrate information from different spatial scales much more aggressively,  forgoing the need to build a larger, multi-scale CNNs.
 
 
 \begin{table*}
@@ -195,8 +195,7 @@ Lastly, note the presence of dilated convolutions \cite{Fisher:2016} in blocks 5
 \label{tab:network}
 \begin{tabular}{|c|c|c|c|c|c|}
 	\hline
-	\hline
-	Layer & Filters & Spac. Res. & Kernel size & Stride & Dilation\\
+	\textbf{Layer} & \textbf{Filters} & \textbf{Spac. Res.} & \textbf{Kernel size} & \textbf{Stride} & \textbf{Dilation}\\
 	\hline
 	\hline
 	\multicolumn{6}{|c|}{input data (with size e.g. 224 * 224)}\\ \hline
