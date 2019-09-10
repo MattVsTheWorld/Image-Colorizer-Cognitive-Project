@@ -71,6 +71,7 @@
 \DeclareMathOperator{\EX}{\mathbb{E}}% expected value
 
 \usepackage{multicol}
+\usepackage[table]{xcolor}
 
 
 
@@ -189,46 +190,64 @@ In regards to the spatial resolution of output, note how computational stride is
 Lastly, note the presence of dilated convolutions \cite{Fisher:2016} in blocks 5 and 6. This type of convolution has been shown to help in applications with dense predictions such as ours, since this approach to colorization is implemented as a classification problem for each pixel. At its core, what this approach allows us to do is to integrate information from different spatial scales much more aggressively,  forgoing the need to build a larger, multi-scale CNNs.
 
 
-\begin{table*}
+\begin{table*} [h!]
 \centering
-\captionof{table}{Network structure}
 \label{tab:network}
+\captionof{table}{Network structure}
+\setlength{\arrayrulewidth}{0.25mm}
+\setlength{\tabcolsep}{15pt}
+\renewcommand{\arraystretch}{1}
 \begin{tabular}{|c|c|c|c|c|c|}
+
 	\hline
+	\rowcolor{gray!30}
 	\textbf{Layer} & \textbf{Filters} & \textbf{Spac. Res.} & \textbf{Kernel size} & \textbf{Stride} & \textbf{Dilation}\\
 	\hline
 	\hline
 	\multicolumn{6}{|c|}{input data (with size e.g. 224 * 224)}\\ \hline
-	conv1\_1 & 64 & 224 & 3x3 & (1,1) & 1 \\ \hline
+	\rowcolor{gray!15}
+	conv1\_1 & 64 & 224 & 3x3 & (1,1) & 1 \\ 
 	conv1\_2 & 64 & 112 & 3x3 & (2,2) & 1 \\ \hline
 	\multicolumn{6}{|c|}{Batch normalization}\\ \hline
-	conv2\_1 & 128 & 112 & 3x3 & (1,1) & 1 \\ \hline
+	\rowcolor{gray!15}
+	conv2\_1 & 128 & 112 & 3x3 & (1,1) & 1 \\ 
 	conv2\_2 & 128 & 56 & 3x3 & (2,2) & 1 \\ \hline
 	\multicolumn{6}{|c|}{Batch Normalization}\\ \hline
-	conv3\_1 & 256 & 56 & 3x3 & (1,1) & 1 \\ \hline
-	conv3\_2 & 256 & 56 & 3x3 & (1,1) & 1 \\ \hline
+	\rowcolor{gray!15}
+	conv3\_1 & 256 & 56 & 3x3 & (1,1) & 1 \\ 
+	conv3\_2 & 256 & 56 & 3x3 & (1,1) & 1 \\ 
+	\rowcolor{gray!15}
 	conv3\_3 & 256 & 28 & 3x3 & (2,2) & 1 \\ \hline
 	\multicolumn{6}{|c|}{Batch normalization}\\ \hline
-	conv4\_1 & 512 & 28 & 3x3 & (1,1) & 1 \\ \hline
-	conv4\_2 & 512 & 28 & 3x3 & (1,1) & 1 \\ \hline
+	\rowcolor{gray!15}
+	conv4\_1 & 512 & 28 & 3x3 & (1,1) & 1 \\ 
+	conv4\_2 & 512 & 28 & 3x3 & (1,1) & 1 \\ 
+	\rowcolor{gray!15}
 	conv4\_3 & 512 & 28 & 3x3 & (1,1) & 1 \\ \hline
 	\multicolumn{6}{|c|}{Batch normalization}\\ \hline
-	conv5\_1 & 512 & 28 & 3x3 & (1,1) & 2 \\ \hline
-	conv5\_2 & 512 & 28 & 3x3 & (1,1) & 2 \\ \hline
+	\rowcolor{gray!15}
+	conv5\_1 & 512 & 28 & 3x3 & (1,1) & 2 \\ 
+	conv5\_2 & 512 & 28 & 3x3 & (1,1) & 2 \\ 
+	\rowcolor{gray!15}
 	conv5\_3 & 512 & 28 & 3x3 & (1,1) & 2 \\ \hline
 	\multicolumn{6}{|c|}{Batch normalization}\\ \hline
-	conv6\_1 & 512 & 28 & 3x3 & (1,1) & 2 \\ \hline
-	conv6\_2 & 512 & 28 & 3x3 & (1,1) & 2 \\ \hline
+	\rowcolor{gray!15}
+	conv6\_1 & 512 & 28 & 3x3 & (1,1) & 2 \\ 
+	conv6\_2 & 512 & 28 & 3x3 & (1,1) & 2 \\ 
+	\rowcolor{gray!15}
 	conv6\_3 & 512 & 28 & 3x3 & (1,1) & 2 \\ \hline
 	\multicolumn{6}{|c|}{Batch normalization}\\ \hline
-	conv7\_1 & 256 & 28 & 3x3 & (1,1) & 1 \\ \hline
-	conv7\_2 & 256 & 28 & 3x3 & (1,1) & 1 \\ \hline
+	\rowcolor{gray!15}
+	conv7\_1 & 256 & 28 & 3x3 & (1,1) & 1 \\ 
+	conv7\_2 & 256 & 28 & 3x3 & (1,1) & 1 \\ 
+	\rowcolor{gray!15}
 	conv7\_3 & 256 & 28 & 3x3 & (1,1) & 1 \\ \hline
 	\multicolumn{6}{|c|}{Batch normalization}\\ \hline
 	\multicolumn{6}{|c|}{2D Upsampling with size 2*2}\\ \hline
-	conv8\_1 & 128 & 56 & 3x3 & (0.5,0.5)\footnote{The .5 stride is simulated through the 2d upsampling. Earlier implementations made instead use of a deconvolutional layer, but we found this other approach to work better in practice.
-	}. & 1 \\ \hline
-	conv8\_2 & 128 & 56 & 3x3 & (1,1) & 1 \\ \hline
+	\rowcolor{gray!15}
+	conv8\_1 & 128 & 56 & 3x3 & (0.5,0.5)\footnotemark & 1 \\ 
+	conv8\_2 & 128 & 56 & 3x3 & (1,1) & 1 \\ 
+	\rowcolor{gray!15}
 	conv8\_3 & 128 & 56 & 3x3 & (1,1) & 1 \\ \hline
 	\multicolumn{6}{|c|}{Softmax Layer}\\ \hline
 
@@ -236,15 +255,12 @@ Lastly, note the presence of dilated convolutions \cite{Fisher:2016} in blocks 5
 \end{table*}
 
 
+
 \subsection{Parameters}
 
-All convolutional layers have their weights initialized through He Normal \cite{Kaiming:2015} initialization. This method initializes weights randomly, while also taking into consideration the size of the previous layer, which helps in attaining a controlled initialization. As a consequence, the result is a faster and more efficient gradient descent.
+All convolutional layers have their weights initialized through He Normal \cite{Kaiming:2015} initialization. This method initializes weights randomly, while also taking into consideration the size of the previous layer, which helps in attaining a controlled initialization. As a consequence, the result is a faster and more efficient gradient descent. In practice, samples are drawn from a truncated normal distribution centred on 0, and with $stddev=\sqrt{(2/fan\_in)}$, where $fan\_in$ is the number of incoming neurons.
 
-\begin{equation}
-Var(w_i) = \frac{2}{fan\_in}
-\end{equation}
-
-Layers use a ReLU activation function; this works well with the weight initializer, as it was designed with such activation unit in mind. We also apply an L2 regularization function to the kernel matrix in all layers, which constrains the optimisation algorithm in an attempt to minimize overfitting.
+This type of initialization also agrees with the choice of using \textit{ReLU} activation functions, as it was designed with such an activation unit in mind. We also apply an \textit{L2} regularization function to the kernel matrix in all layers, which constrains the optimisation algorithm in an attempt to minimize overfitting:
 
 \begin{equation}
 Loss = Error(y,\tilde{y}) + \lambda\sum_{i=1}^{N} w_i^2
@@ -252,16 +268,18 @@ Loss = Error(y,\tilde{y}) + \lambda\sum_{i=1}^{N} w_i^2
 
 All layers utilise a padding of type ‘\textit{same}’, meaning the layer’s output have the same spatial dimension as the outputs (this is achieved through \textit{0-padding}).
 
-Finally, our choice for optimizer was that of \textit{Adam} (Adaptive Moment Estimation) \cite{Diaderik:2015}. While we initially experimented using SGD (Stochastic Gradient Descent), we found that \textit{Adam} gave us the best results in the scope of our experiments. That is, when considering the restricted nature of our resources, we consider Adam to be the better choice, though recent discoveries demonstrate this optimizer to generalize poorly in the long run \cite{Nitish:2017}.
+Finally, our choice for optimizer was that of \textit{Adam} (derived from \textit{Adaptive Moment Estimation}) \cite{Diaderik:2015}. While we initially experimented using SGD (Stochastic Gradient Descent), we found that \textit{Adam} gave us the best results in the scope of our experiments. That is, when considering the restricted nature of our resources, we consider Adam to be the better choice, though recent discoveries demonstrate this optimizer to generalize poorly in the long run \cite{Nitish:2017}.
 
 
 \subsection{Prediction evaluation}
 
-Once the model has been trained, prediction is done through a single, feed forward pass through the network, which accepts the L channel of a picture and produces a probability distribution over the 313 quantized colors for each pixel.
+Once the model has been trained, prediction is done through a single, feed forward pass through the network, which only retains the \textbf{L} channel of input pictures and produces a probability distribution over the 313 quantized colors for each pixel.
 
 It remains to decide how to use this information to produce our colorization. One choice is to take the most frequent and probable values; while this idea results very vibrant colors, it often produces spatially inconsistent results and “hard transitions” from one color to the other. A better approach could therefore be to take the mean over each of the quantized bins, weighing them by their probability. This ensures softer transitions, but runs into the unwanted consequence that colors become desaturated, as too much importance is attributed to lower probability colors.
 
-The solution proposed by Zhang \cite{Zhang:2016} attempts to have the best of both worlds. The authors suggest taking what they name “annealed mean” of the distribution. This consists of an interpolation of the softmax distribution by means of a temperature value T, and consequently taking the mean of the result. Strictly speaking, this translates into dividing each value by the aforementioned temperature value, which ranges from 0 to 1 (the suggested value is 0.38, which we adhered to). This ensures that more importance is given to high probability values, resulting into the vibrant colorization desired as well as better spatial consistency.
+The solution proposed in \cite{Zhang:2016} attempts to have the best of both worlds. The authors suggest taking what they name the “\textit{annealed mean}” of the distribution. This consists of an interpolation of the softmax distribution by means of a temperature value T, and consequently taking the mean of the result. Strictly speaking, this translates into dividing each value by the aforementioned temperature value, which ranges from 0 to 1 (the suggested value is 0.38, which we adhered to) (6). This ensures that more importance is given to high probability values, resulting into the vibrant colorization desired as well as better spatial consistency.
+
+\footnotetext{The .5 stride is simulated through a 2d upsampling operation. Earlier implementations made instead use of a deconvolutional layer, but we found this other approach to work better in practice.}
 
 \begin{equation}
 H(P) = \EX[f(P)]
