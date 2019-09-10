@@ -92,13 +92,13 @@ def main():
 
     print(model_1.summary())
 
-    predict_folder = 'test_images'
+    predict_folder = 'test_images/misc'
     # predict_folder = 'alt_set'
 
     names = [f for f in os.listdir(predict_folder) if f.lower().endswith('.jpg')]
     names_jpeg = [f for f in os.listdir(predict_folder) if f.lower().endswith('.jpeg')]
-    names_jpeg = [f for f in os.listdir(predict_folder) if f.lower().endswith('.png')]
-    names = names + names_jpeg
+    names_png = [f for f in os.listdir(predict_folder) if f.lower().endswith('.png')]
+    names = names + names_jpeg + names_png
     # Pick 10 samples from validation set
     # samples = random.sample(names, 10)
 
