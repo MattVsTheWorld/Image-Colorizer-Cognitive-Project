@@ -7,6 +7,7 @@ from scipy.signal import gaussian, convolve
 from config import imgs_dir, fmt, num_colors
 from config import data_dir as abs_data_dir
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 def load_data(size, image_folder=imgs_dir):
     # """
