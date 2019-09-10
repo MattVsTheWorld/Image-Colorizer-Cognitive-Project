@@ -4,7 +4,6 @@ venv/
 .idea/
 **/*.hdf5
 **/*.pickle
-**/*.jpg
 **/*.jpeg
 **/*.pyc
 **/*.gz
@@ -23,4 +22,6 @@ _legacy/1_Deprecated version/src/output_images
 output_images/
 test_images/
 src/images.pickle
+alt_set/
+_legacy/
 models/pretrained.rar
