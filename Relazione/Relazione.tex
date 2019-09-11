@@ -339,7 +339,7 @@ Once we finalized our implementation, we worked on tuning some of the main hyper
 Unsurprisingly, our experiments show that using higher image sizes results in better training. Our earlier tests used smaller images in order to hasten the process and fit in the limited memory of our local machines, but with our eventual move to the cloud we settled on a size of 256x256 pixels. This allowed to retain a good amount of detail while maintaining a batch size we were comfortable with.
 
 \subsubsection{Batch size}
-Though we tried a few different sizes for the data batches to be used at each training step, we settled on a value of 64. This pushed the limits of our hardware to its maximum (with each batch utilizing almost the full 15GB of GPU memory available in our latest virtual machine). While we tried to vary the size of images to be able to create larger batches, we found this compromise to be what gave us the best results. This may quite obviously be because of the higher definition of the images, but recent works also advise against using larger and larger batches \cite{Nitish:2017}, which is something we took into consideration.
+Though we tried a few different sizes for the data batches to be used at each training step, we settled on a value of 64. This pushed the limits of our hardware to its maximum (with each batch utilizing almost the full 15GB of GPU memory available in our latest virtual machine). While we tried to vary the size of images to be able to create larger batches, we found this compromise to be what gave us the best results. This may quite obviously be because of the higher definition of the images, but recent works also advise against using larger and larger batches \cite{Nitish2:2017}, which is something we took into consideration.
 
 \subsubsection{Learning rate}
 We tested various learning rates, and settled on a value of  3.16e-5 (again, using the \textit{Adam} optimizer). Many values were experimented with, but we found that higher orders of magnitude would quickly become stuck after a rapid descent. Anything significantly lower, on the other hard, would have too much of a hard time exiting points of local optimum.
@@ -568,7 +568,7 @@ Imagenet Large Scale Visual Recognition Challenge (2017).
 Google Cloud Platform.
 \newblock \href{https://cloud.google.com/}{Google Cloud home page}.
 
-\bibitem[14]{Nitish:2017}
+\bibitem[14]{Nitish2:2017}
 Nitish Shirish Keskar, Dheevatsa Mudigere, Jorge Nocedal, Mikhail Smelyanskiy, Ping Tak Peter Tang (2017).
 \newblock On large-batch training for deep learning: generalization gap and sharp minima.
 
