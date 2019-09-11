@@ -14,54 +14,39 @@ import tensorflow as tf
 
 
 def colorize(model, x_test, height, width, nb_q, q_ab, lab):
-    # L: 0 <=L<= 255, a: 42 <=a<= 226, b: 20 <=b<= 223.
     # ------------------------------------------------------
     # --------------------- Prediction ---------------------
     # ------------------------------------------------------
-    X_colorized = model.predict(x_test)
-    X_colorized = X_colorized.reshape((height * width, nb_q))
+    images_colorized = model.predict(x_test)
+    images_colorized = images_colorized.reshape((height * width, nb_q))
     # We now have an array of h*w with 313 axes. Each value corresponds to the probability that point has that (of the 313) colors
 
     # Reweight probabilities; epsilon avoids 0/NaN errors
     # Formula (5) @paper
     epsilon = 1e-8
-    X_colorized = np.exp(np.log(X_colorized + epsilon) / T)
-    X_colorized = X_colorized / np.sum(X_colorized, 1)[:, np.newaxis]
+    images_colorized = np.exp(np.log(images_colorized + epsilon) / T)
+    images_colorized = images_colorized / np.sum(images_colorized, 1)[:, np.newaxis]
 
     # Reweighted; take all a/b values from color space
     q_a = q_ab[:, 0].reshape((1, 313))
     q_b = q_ab[:, 1].reshape((1, 313))
 
-    # -------- Max probability --------
-    # # Add the predicted colors
-    # # axis 1 = colums; sum all values in rows
-    # idx_a = np.argmax(X_colorized, 1)
-    # X_a = np.zeros(height * width)
-    # for i in range(height * width):
-    #     X_a[i] = q_a[idx_a[i]]
-    # X_a = X_a.reshape((height, width))
-    #
-    # idx_b = np.argmax(X_colorized, 1)
-    # X_b = np.zeros(height * width)
-    # for i in range(height * width):
-    #     X_b[i] = q_b[idx_b[i]]
-    # X_b = X_b.reshape((height, width))
     # -----------------------------------
     # Sum all color probabilities. The highest probability will determine the color
     # These "color weights" are summed so trainsitions from one color the the other are smoother
-    X_a = np.sum(X_colorized * q_a, 1).reshape((height, width))
-    X_b = np.sum(X_colorized * q_b, 1).reshape((height, width))
+    images_a = np.sum(images_colorized * q_a, 1).reshape((height, width))
+    images_b = np.sum(images_colorized * q_b, 1).reshape((height, width))
 
-    X_a = cv2.resize(X_a, (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
-    X_b = cv2.resize(X_b, (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
+    images_a = cv2.resize(images_a, (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
+    images_b = cv2.resize(images_b, (img_rows, img_cols), interpolation=cv2.INTER_CUBIC)
 
-    X_a = X_a + 128
-    X_b = X_b + 128
+    images_a = images_a + 128
+    images_b = images_b + 128
 
     out_lab = np.zeros((img_rows, img_cols, 3), dtype=np.int32)
     out_lab[:, :, 0] = lab[:, :, 0]
-    out_lab[:, :, 1] = X_a
-    out_lab[:, :, 2] = X_b
+    out_lab[:, :, 1] = images_a
+    out_lab[:, :, 2] = images_b
 
     out_lab = out_lab.astype(np.uint8)
     out_bgr = cv2.cvtColor(out_lab, cv2.COLOR_LAB2BGR)

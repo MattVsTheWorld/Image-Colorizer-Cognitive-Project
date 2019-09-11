@@ -15,13 +15,13 @@ def load_data(size, image_folder=imgs_dir):
     # :param size: width/height to resize images to
     # :param image_folder: path to images
     # :param fmt: format of images
-    # :return: X_ab, an ndarray containing the samples in Lab format (a,b channels only)
+    # :return: images_ab, an ndarray containing the samples in Lab format (a,b channels only)
     # """
     names = [f for f in os.listdir(image_folder) if f.lower().endswith(fmt)]
     np.random.shuffle(names)
-    num_samples = len(names)  # // 5  # prior_sample_size
+    num_samples = len(names) # prior_sample_size
     print("Creating prior based on " + str(num_samples) + " images")
-    X_ab = np.empty((num_samples, size, size, 2))
+    images_ab = np.empty((num_samples, size, size, 2))
     # Take the first num_samples (shuffled) images
     for i in tqdm(range(num_samples)):
         name = names[i]
@@ -30,27 +30,27 @@ def load_data(size, image_folder=imgs_dir):
         bgr = cv2.resize(bgr, (size, size), interpolation=cv2.INTER_CUBIC)
         lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
         lab = lab.astype(np.int32)
-        X_ab[i] = lab[:, :, 1:] - 128
+        images_ab[i] = lab[:, :, 1:] - 128
 
-    return X_ab
+    return images_ab
 
 
-def compute_color_prior(X_ab, data_dir=abs_data_dir):
+def compute_color_prior(images_ab, data_dir=abs_data_dir):
     # """
     # Calculate prior color probability of dataset
     # :param X_ab: Sample of images
     # """
     q_ab = np.load(os.path.join(data_dir, "lab_gamut.npy"))
-    X_a = np.ravel(X_ab[:, :, :, 0])
-    X_b = np.ravel(X_ab[:, :, :, 1])
-    X_ab = np.vstack((X_a, X_b)).T
+    images_a = np.ravel(images_ab[:, :, :, 0])
+    images_b = np.ravel(images_ab[:, :, :, 1])
+    images_ab = np.vstack((images_a, images_b)).T
 
     # Create nearest neighbour instance with index = q_ab
     # Basically each point is its closest representative
     num_neighbours = 1
     nearest = nn.NearestNeighbors(n_neighbors=num_neighbours, algorithm='ball_tree').fit(q_ab)
     # index and distance of nearest neigh
-    dist, idx = nearest.kneighbors(X_ab)
+    dist, idx = nearest.kneighbors(images_ab)
 
     # Count number of occurrences of each color
     idx = np.ravel(idx)
@@ -110,24 +110,14 @@ def compute_prior_factor(gamma=0.5, data_dir=abs_data_dir):
 
     np.save(os.path.join(data_dir, "prior_factor.npy"), prior_factor)
 
-    # Plot
-    plt.clf()
-    plt.yscale("log")
-    plt.plot(prior_prob_smoothed)
-    plt.show()
-    plt.yscale("log")
-    plt.plot(prior_factor, "g--")
-    plt.show()
-
-
 def main():
     # --------------------------------------------------
     # # Optional: How to calculate prior probability
     # size = 64
     # # Load the sample of images
-    # X_ab = load_data(size)
+    # images_ab = load_data(size)
     # # Calculate prior probability of color
-    # compute_color_prior(X_ab)
+    # compute_color_prior(images_ab)
     # smooth_color_prior(file="prior_probability.npy")
     # compute_prior_factor()
     # --------------------------------------------------
