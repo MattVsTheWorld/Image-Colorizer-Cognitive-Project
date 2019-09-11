@@ -394,7 +394,11 @@ Empirically speaking, we found that the system first produces some promising res
 \subsubsection{Training runs}
 
 Figure \ref{fig:loss} and \ref{fig:valloss} display the change in loss on the training and validation set throughout various epochs. These graphs refer to our latest training session, performed on our full 20gb dataset on an NVIDIA Tesla T4. The test ran for almost 67 hours, after which we decided to stop the instance as we began to see no improvement. As a matter of fact, later models struggled to improve on validation loss, and appeared to be overfitting on certain color patterns.
-Our latest run was by far our longest, while previous tests were mostly aimed at finding a good balance between our hyperparameters. Our experimental results confirm the well known fact that smaller datasets provide insufficient information to the network. Practically speaking, we noted that the loss value would converge much faster and at higher values, and would thereon be unable to improve. Furthermore, with less images given to the network, a gap between training and validation loss would quickly appear, with the latter getting stuck at higher values (a clear indication of overfitting).
+
+
+Our latest run was by far our longest, while previous tests were mostly aimed at finding a good balance between our hyperparameters. Our experimental results confirm the well known fact that smaller datasets provide insufficient information to the network. Practically speaking, we noted that the loss value would converge much faster and at higher values, and would thereon be unable to improve. Furthermore, with less images given to the network, a gap between training and validation loss would quickly appear, with the latter getting stuck at higher values (a clear indication of overfitting on training data). 
+
+Conversely, figure \ref{fig:loss} and \ref{fig:valloss} show the two curves to be much more consistent throughout with one another.
 
 
 \begin{figure}[h]
@@ -411,8 +415,9 @@ Our latest run was by far our longest, while previous tests were mostly aimed at
 
 \subsubsection{Results}
 
-Figure \ref{fig:bestimgs} shows some of what we consider the best results of our network. Most importantly, some of these pictures display particularly vivid colors, thanks to the implementation of the class-rebalanced loss function. Furthermore, note how picture \ref{fig:banio} exemplifies the multimodal nature of colorization; both images seems plausible, yet the colors are quite distinct from one another.\\
-Figure \ref{fig:bad} shows some failure cases. Unsurprisingly, we noticed that our system struggles with objects with a great amount of details. We hypothesize this to be a direct consequence of the lack of data as well as the need for a more refined architecture, ideally able to handle larger and more detailed images.
+Figure \ref{fig:bestimgs} shows some of what we consider the best results of our network. Most importantly, some of these pictures display particularly vivid colors, thanks to the implementation of the class-rebalanced loss function. Furthermore, note how figure \ref{fig:banio} exemplifies the multimodal nature of colorization; both images seem plausible, yet the colors are quite distinct from one another.
+
+Figure \ref{fig:bad} shows some failure cases. Unsurprisingly, we noticed that our system struggles with objects with a great amount of details. We hypothesize this to be a direct consequence of the lack of data, as well as the need for a more refined architecture, ideally able to handle larger and more detailed images.
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{img/bestimgs.png}
@@ -434,10 +439,13 @@ Figure \ref{fig:bad} shows some failure cases. Unsurprisingly, we noticed that o
 
 \subsection{Final considerations}
 
-We conclude this chapter by making some considerations and comparisons with the original authors’ version. \\
-First and foremost, when taking into consideration the restricted scale of our experiments, we are quite happy with the results obtained. Zhang \cite{Zhang:2016} utilizes the Caffe framework for his implementation, which at times made it difficult to understand some of the finer details of the network. As mentioned, the final version they make available \cite{Zhang:github} was slightly adapted to be able to better detect finer features; we refrained from such adaptations, as they would have slowed our training sessions significantly without necessarily resulting in better performance. \\
-Undoubtedly, the authors had access to much more powerful computational hardware, which allowed them to work with better detailed images as well as more data (as they utilize the full Image Net dataset). Nonetheless, the core of the implementation remains the same. The network in itself is quite deep, which is reflected by how long training had to proceed before stabilizing. While we did try many different betterments for the architecture in itself (performing the same operations, but in different ways), we have reached a point where we firmly believe that the best bet for any improvement is simply to utilize more data.\\
-A last consideration of note can be made about the different uses that automatic image colorization can have. As shown by Zhang \cite{Zhang:2016}, this may be used to aid and improve other systems. The representation learned by this network, though aimed towards colorization, has been proven useful for tasks that are also geared towards the detection of semantic information. Some examples include object classification, detection and segmentation.
+We conclude this chapter by making some considerations and comparisons with the original authors’ version \cite{Zhang:2016}.
+
+First and foremost, when taking into account the restricted scale of our experiments, we are quite happy with the results obtained. The referenced implementation utilizes the Caffe framework, which at times made it difficult to compare some of the finer details of the network. As mentioned, the version they make available \cite{Zhang:github} was slightly adapted to be able to better detect finer features; we refrained from such adaptations, as they would have slowed our training sessions significantly without necessarily resulting in better performance.
+
+Undoubtedly, the authors had access to much more powerful computational hardware, which allowed them to work with better detailed images as well as more data (the entirety of Image Net \cite{Imagenet}). Nonetheless, the core of the implementation remains the same. The network in itself is quite deep, which is reflected by lengthy training times. While we did try many different betterments for the architecture in itself (performing the same operations, but in different ways), at this point in time we firmly believe that our best bet for any improvement is to simply utilize more data.
+
+Lastly, we note a few practical uses that a system such as this has been shown to have. The representation learned by this network, though aimed towards colorization, has been proven useful for tasks that are likewise geared towards the detection of semantic information. Some examples include object classification, detection and segmentation \cite{Zhang:2016}.
 
 
 %------------------------------------------------
