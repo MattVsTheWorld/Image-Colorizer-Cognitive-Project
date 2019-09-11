@@ -35,7 +35,6 @@ def main():
 
     # ------------
     print(new_model.summary())
-    # Final callbacks
     callbacks = [tensor_board, model_checkpoint, early_stop, reduce_lr]
     split_data(imgs_dir, fmt)
     # Read number of training and validation samples

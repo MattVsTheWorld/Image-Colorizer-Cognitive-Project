@@ -19,7 +19,8 @@ def colorize(model, x_test, height, width, nb_q, q_ab, lab):
     # ------------------------------------------------------
     images_colorized = model.predict(x_test)
     images_colorized = images_colorized.reshape((height * width, nb_q))
-    # We now have an array of h*w with 313 axes. Each value corresponds to the probability that point has that (of the 313) colors
+    # We now have an array of h*w with 313 axes.
+    # Each value corresponds to the probability that point has that (of the 313) colors
 
     # Reweight probabilities; epsilon avoids 0/NaN errors
     # Formula (5) @paper
@@ -31,7 +32,6 @@ def colorize(model, x_test, height, width, nb_q, q_ab, lab):
     q_a = q_ab[:, 0].reshape((1, 313))
     q_b = q_ab[:, 1].reshape((1, 313))
 
-    # -----------------------------------
     # Sum all color probabilities. The highest probability will determine the color
     # These "color weights" are summed so trainsitions from one color the the other are smoother
     images_a = np.sum(images_colorized * q_a, 1).reshape((height, width))
@@ -78,7 +78,6 @@ def main():
     print(model_1.summary())
 
     predict_folder = 'test_images/misc'
-    # predict_folder = 'alt_set'
 
     names = [f for f in os.listdir(predict_folder) if f.lower().endswith('.jpg')]
     names_jpeg = [f for f in os.listdir(predict_folder) if f.lower().endswith('.jpeg')]

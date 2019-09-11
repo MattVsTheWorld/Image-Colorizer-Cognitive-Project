@@ -9,6 +9,7 @@ from config import data_dir as abs_data_dir
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
+
 def load_data(size, image_folder=imgs_dir):
     # """
     # Loads a sample of images
@@ -19,7 +20,7 @@ def load_data(size, image_folder=imgs_dir):
     # """
     names = [f for f in os.listdir(image_folder) if f.lower().endswith(fmt)]
     np.random.shuffle(names)
-    num_samples = len(names) # prior_sample_size
+    num_samples = len(names)  # prior_sample_size
     print("Creating prior based on " + str(num_samples) + " images")
     images_ab = np.empty((num_samples, size, size, 2))
     # Take the first num_samples (shuffled) images
@@ -76,7 +77,6 @@ def smooth_color_prior(sigma=5, data_dir=abs_data_dir, file="prior_probability.n
     # Smooth with gaussian
     f = interp1d(np.arange(prior_prob.shape[0]), prior_prob)
     # create 1000 evenly spaced numbers [0,312]
-    # print(prior_prob.shape[0])
     x_coord = np.linspace(0, prior_prob.shape[0] - 1, 1000)
     y_coord = f(x_coord)
     # 2000 points in the window
@@ -109,6 +109,7 @@ def compute_prior_factor(gamma=0.5, data_dir=abs_data_dir):
     prior_factor = prior_factor / (np.sum(prior_factor * prior_prob_smoothed))
 
     np.save(os.path.join(data_dir, "prior_factor.npy"), prior_factor)
+
 
 def main():
     # --------------------------------------------------

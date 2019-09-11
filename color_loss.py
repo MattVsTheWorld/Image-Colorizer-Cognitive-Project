@@ -5,7 +5,12 @@ from config import num_colors
 
 
 def categorical_crossentropy_color(y_true, y_pred):
-
+    # """
+    # Calculates loss value while taking into consideration prior color weights
+    # :param y_true: target output
+    # :param y_pred: predicted output
+    # :return: a loss value (color weighted categorical cross entropy)
+    # """
     y_true = reshape(y_true, (-1, num_colors))
     y_pred = reshape(y_pred, (-1, num_colors))
     # take the most probable colour of the 5 nearest neighbours
