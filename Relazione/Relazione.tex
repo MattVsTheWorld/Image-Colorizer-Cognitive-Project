@@ -302,11 +302,11 @@ f(P) = \frac{\exp(log(P)/T)}{\sum_q \: \exp(log(P_q)/T)}
 \newpage
 
 \section{Experimentation}
-In this section, we discuss the actual implementation and the results of our experiments. This includes an overview languages and libraries used, as well as some highlights of the code. We then go on to discuss the finer details of our experiments, such as data utilized, hyperparameters tested and hardware specifications. Finally, we present our results, describing our thought process in regards to error and metric values.
+In this section, we discuss the actual implementation and the results of our experiments. This includes an overview of languages and libraries used, as well as some insights about actual code. We then go on to discuss the finer details of our experiments, such as data utilized, hyperparameters tested and hardware specifications. Finally, we present our results, giving our thoughts in regards to error and metric values.
 
 \subsection{Implementation}
 
-The full implementation was written to work with \texttt{Python 2.7}, and is based on \texttt{Tensorflow 1.14} and \texttt{Keras}. While we initially set out to create a pure \texttt{Tensorflow} implementation, we soon realized that \texttt{Keras} was the better option, as it allowed us to work in a simpler yet more efficient fashion.
+The full implementation was written to work with \texttt{Python 2.7}, and is based on \texttt{Tensorflow 1.14} and \texttt{Keras}. While we initially set out to create a model purely in \texttt{Tensorflow}, we soon realized that \texttt{Keras} was the better option, as it allowed us to work in a simpler yet more efficient fashion.
 
 Since the data required quite a bit of preprocessing, the loading of images from file as well as the creation of batches is handled by a custom class, \texttt{DataGenSequence}. Through this, the system may load any color image of a given format and generate training data by stripping it of its \textbf{ab} channels, as well as generating a ground truth through a \textit{soft-encoding} method, namely \texttt{get\_soft\_encoding}.
 
@@ -329,7 +329,7 @@ This allows for extra flexibility, as images may be resized and converted in for
 While we initially planned on using the full Image Net dataset \cite{Imagenet}, we soon realized we lacked the computational power to process it in its full size, even after we decided to move our experiments on the Google Cloud Platform \cite{GCP} (more on this later). We therefore decided on a suitable subset, which we increased from time to time as we gained confidence in the correctness of our implementation. Our final dataset contains 175’333 images (roughly 20gb worth of pictures) randomly and evenly selected from the 2017 Large Scale Visual Recognition Challenge Image Net dataset \cite{ImNetChallenge:2017}. Of this, 99\% was used as a training set, while the remaining 1\% for validation. While these percentages might seem odd, we found many implementations used even less images for validation. The authors \cite{Zhang:2016} themselves utilize a dedicated validation set of 10k images, over the 1.3M used for their training. In our experience, we found that our proposed value presented the least discrepancy overall between the values of loss and validation loss, while still allowing validation to be performed in a timely manner.
 
 
-Some remarks need to be made with regards to the prior color probability of the dataset (used in the class rebalancing method). While we did write our own implementation and initially used it, our final version utilizes the results as calculated by \cite{Zhang:2016}, which are publicly available \cite{Zhang:github}. Due to our limited resources, we could only manage to calculate such prior on either a small subset of our dataset or on greatly downscaled images. It is worth mentioning that, if we make a comparison, our prior factor (figure \ref{fig:oursprior}) does not differ greatly from the original authors’ (figure \ref{fig:zhangprior}). We decided nonetheless to utilize the more accurate data, as it is based on the full Image Net dataset.
+Some remarks need to be made with regards to the prior color probability of the dataset (used in the class rebalancing method). While we did write our own implementation and initially used it, our final version utilizes the results as calculated by Zhang et al. \cite{Zhang:2016}, which are publicly available \cite{Zhang:github}. Due to our limited resources, we could only manage to calculate such prior on either a small subset of our dataset or on greatly downscaled images. It is worth mentioning that, if we make a comparison, our prior factor (figure \ref{fig:oursprior}) does not differ greatly from the original authors’ (figure \ref{fig:zhangprior}). We decided nonetheless to utilize the more accurate data, as it is based on the full Image Net dataset.
 
 \subsection{Hyperparameters}
 
@@ -342,7 +342,7 @@ Unsurprisingly, our experiments show that using higher image sizes results in be
 Though we tried a few different sizes for the data batches to be used at each training step, we settled on a value of 64. This pushed the limits of our hardware to its maximum (with each batch utilizing almost the full 15GB of GPU memory available in our latest virtual machine). While we tried to vary the size of images to be able to create larger batches, we found this compromise to be what gave us the best results. This may quite obviously be because of the higher definition of the images, but recent works also advise against using larger and larger batches \cite{Nitish:2017}, which is something we took into consideration.
 
 \subsubsection{Learning rate}
-We tested various learning rates, and settled on a value of  3.16e-5 (using the \textit{Adam} optimizer). Many values were experimented with, but we found that higher order of magnitudes would quickly become stuck after a rapid descent. Anything significantly lower, on the other hard, would have too much of a hard time exiting points of local optimum.
+We tested various learning rates, and settled on a value of  3.16e-5 (again, using the \textit{Adam} optimizer). Many values were experimented with, but we found that higher orders of magnitude would quickly become stuck after a rapid descent. Anything significantly lower, on the other hard, would have too much of a hard time exiting points of local optimum.
 The final chosen value allows for training to be fast in the beginning without exhibiting wild swings in the behaviour of the loss value in its later epochs.
 
 
@@ -357,7 +357,7 @@ The following are the hardware specifics for the machines used in our tests. We 
 \item \textbf{OS}: Windows 10 Enterprise.
 \end{itemize}
 
-The aforementioned hardware allowed us to work on small dataset and downsized images, but in the long run did not have the GPU capabilities necessary for our needs, even on a reduced dataset. Namely, we required larger GPU memory in order to work on bigger images as well as working with larger batches. We therefore decided to move our experiments on the Google Cloud Platform \cite{GCP}, where we instantiated a virtual machine with the following specifications:
+The aforementioned hardware allowed us to work on small datasets and downsized images, but in the long run did not have the GPU capabilities necessary for our needs, even on a reduced scale. Namely, we required a considerable upgrade in GPU memory in order to work on bigger images as well as larger batches. We therefore decided to move our experiments on the Google Cloud Platform \cite{GCP}, where we instantiated a virtual machine with the following specifications:
 \\
 \\
 
@@ -374,15 +374,15 @@ As stated above, we initially performed training on an NVIDIA Tesla P4 GPU, but 
 
 \subsection{Performance and results}
 
-What follows is a brief overview of our experimental results. This includes metrics considered, an analysis of loss value trends, a recount of our most significant training runs and finally a showcase of our results.
+What follows is a brief overview of our experimental outcomes. This includes metrics considered, an analysis of loss value trends, a recount of our most significant training runs and finally a showcase of our results.
 
 \subsubsection{Metrics}
-As the original author of the papers claim \cite{Zhang:2016}, evaluating the quality of synthesized images is a difficult task in itself. Common qualitative metrics, such as RMS error on pixel values, fail to capture the notion of visual realism, which is what the system is instead trying to achieve.
-One could nonetheless measure the raw prediction accuracy (L2 distance from the ground truth in the \textbf{ab} color space), but we decided against this as it does not reflect the final aim of the system (that of a plausible colorization). In fact, Zhang et al. \cite{Zhang:2016} show that a metric of the sort would give a rather good score even for an image fully colorized in gray, which is not ideal.
+As the original authors claim \cite{Zhang:2016}, evaluating the quality of synthesized images is a difficult task in itself. Common qualitative metrics, such as RMS error on pixel values, fail to capture the notion of visual realism, which is what the system is instead trying to achieve.
+One could nonetheless measure the raw prediction accuracy (L2 distance from the ground truth in the \textbf{ab} color space), but we decided against this as it does not reflect the true aim of the system (that of a plausible colorization). In fact, Zhang et al. \cite{Zhang:2016} show that a metric of the sort would give a rather good score even for an image fully colorized in gray, which is not ideal.
 
 As a result, the best way to verify the quality of the result is to perform a test on human subjects. While the scope of our experiments is nowhere near as rigorous as the referenced counterpart, we thought it would be interesting to put the results of our model to use by attempting our own version of the proposed tests.
 
-We asked fifteen partecipants to identify real images given a choice between our colorized version of a picture and its original. Each pair of pictures were shown for five seconds and 20 pairs were shown in total.
+We asked fifteen partecipants to identify real images given a choice between our colorized version of a picture and its original. Each pair of pictures was shown for five seconds and 20 pairs were shown in total.
 Figure \ref{fig:testres} summarizes the results. The highest number of mistakes made is 50\% (as if all the choices were made randomly between two equally realistic images), whereas the best achieving subjects managed to have an error rate of 0\%. Our average fooling percentage is 30\%, which resembles the original authors' result of 32\%.
 
 Of course, we do not claim any scientific validity to our test, as the subject pool was far too small to prove of any significance. Nonetheless, the results are at least promising, and provide some positive feedback on the goodness of the model.
@@ -396,18 +396,18 @@ Of course, we do not claim any scientific validity to our test, as the subject p
 \subsubsection{Loss}
 
 As just claimed, commonly used metrics are difficult to apply to a problem of this kind, as the objective of the system is to produce a subjectively \textit{plausible} result.
-Therefore, while it may seem unsatisfactory in some ways, one has to rely on a pure analysis of loss values throughout training epochs. We remind the reader that this value represents the mean difference between the predicted probability distribution of colors and the actual distribution obtained through soft encoding of the ground truth.
+Therefore, while it may seem unsatisfactory in some ways, one has to rely on a pure analysis of loss values throughout training epochs. As a reminder, this value represents the mean difference between the predicted probability distribution of colors and the actual distribution obtained through soft encoding of the ground truth.
 
-Empirically speaking, we found that the system first produces some promising results when validation loss falls below a value of 5, when it gains the confidence to attempt some vivid colorizations. In earlier epochs, resulting pictures are still desaturated and grayish. Learning slows massively around the value of 4, where it begins a slow descent. Finally, in later epochs the system becomes more adept at recognizing shapes and coloring them correctly. As one would expected, we find that a good indicator of how well training is proceeding is how consistent the value of loss in training is with its validation counterpart. 
+Empirically speaking, we found that the system first produces some promising results when validation loss falls below a value of 5, when it gains the confidence to attempt some vivid colorizations. In earlier epochs, resulting pictures are still desaturated and grayish. Learning slows massively around the value of 4, where it begins a slow descent. In later epochs, the system becomes more adept at recognizing shapes and coloring them correctly. As one would expected, we find that a good indicator of how well training is proceeding is how consistent the value of loss in training is with its validation counterpart. 
 
 \subsubsection{Training runs}
 
-Figure \ref{fig:loss} and \ref{fig:valloss} display the change in loss on the training and validation set throughout various epochs. These graphs refer to our latest training session, performed on our full 20gb dataset on an NVIDIA Tesla T4. The test ran for almost 67 hours, after which we decided to stop the instance as we began to see no improvement. As a matter of fact, later models struggled to improve on validation loss, and appeared to be overfitting on certain color patterns.
+Figure \ref{fig:loss} and \ref{fig:valloss} display the change in loss on the training and validation set throughout various epochs. These graphs refer to our latest training session, performed on our full 20gb dataset on an NVIDIA Tesla T4. The test ran for almost 67 hours, after which we decided to stop the instance as we began to see no improvement. Correspondingly, later models struggled to improve on validation loss, and appeared to be overfitting on certain color patterns.
 
 
-Our latest run was by far our longest, while previous tests were mostly aimed at finding a good balance between our hyperparameters. Our experimental results confirm the well known fact that smaller datasets provide insufficient information to the network. Practically speaking, we noted that the loss value would converge much faster and at higher values, and would thereon be unable to improve. Furthermore, with less images given to the network, a gap between training and validation loss would quickly appear, with the latter getting stuck at higher values (a clear indication of overfitting on training data). 
+Our latest run was by far our longest, while previous tests were mostly aimed at finding a good balance between our hyperparameters. Our experimental results confirm the well known fact that smaller datasets provide insufficient information to the network. Practically speaking, we noted that with less images given to the network the loss value would converge much faster and at higher values, and would thereon be unable to improve. Furthermore, a gap between training and validation loss would quickly appear, with the latter getting stuck at higher values (a clear indication of overfitting on training data). 
 
-Conversely, figure \ref{fig:loss} and \ref{fig:valloss} show the two curves to be much more consistent throughout with one another.
+Conversely, figures \ref{fig:loss} and \ref{fig:valloss} show the benefit of bigger datasets, with the two curves being much more consistent with one another throughout training.
 
 
 \begin{figure}[h]
@@ -426,7 +426,7 @@ Conversely, figure \ref{fig:loss} and \ref{fig:valloss} show the two curves to b
 
 Figure \ref{fig:bestimgs} shows some of what we consider the best results of our network. Most importantly, some of these pictures display particularly vivid colors, thanks to the implementation of the class-rebalanced loss function. Furthermore, note how figure \ref{fig:banio} exemplifies the multimodal nature of colorization; both images seem plausible, yet the colors are quite distinct from one another.
 
-Figure \ref{fig:bad} shows some failure cases. Unsurprisingly, we noticed that our system struggles with objects with a great amount of details. We hypothesize this to be a direct consequence of the lack of data, as well as the need for a more refined architecture, ideally able to handle larger and more detailed images.
+Figure \ref{fig:bad} shows some failure cases. Unsurprisingly, we noticed that our system struggles with objects with great amount of details. We hypothesize this to be a direct consequence of the lack of data, as well as the need for a more refined architecture, ideally able to handle larger and more detailed images.
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{img/bestimgs.png}
@@ -454,7 +454,7 @@ First and foremost, when taking into account the restricted scale of our experim
 
 Undoubtedly, the authors had access to much more powerful computational hardware, which allowed them to work with better detailed images as well as more data (the entirety of Image Net \cite{Imagenet}). Nonetheless, the core of the implementation remains the same. The network in itself is quite deep, which is reflected by lengthy training times. While we did try many different betterments for the architecture in itself (performing the same operations, but in different ways), at this point in time we firmly believe that our best bet for any improvement is to simply utilize more data.
 
-Lastly, we note a few practical uses that a system such as this has been shown to have. The representation learned by this network, though aimed towards colorization, has been proven useful for tasks that are likewise geared towards the detection of semantic information. Some examples include object classification, detection and segmentation \cite{Zhang:2016}.
+Lastly, we note a few interesting and practical uses that a system such as this has been shown to have. The representation learned by this network, though aimed towards colorization, has been proven useful for tasks that are likewise geared towards the detection of semantic information. Some examples include object classification, detection and segmentation \cite{Zhang:2016}.
 
 
 %------------------------------------------------
@@ -466,24 +466,24 @@ Lastly, we note a few practical uses that a system such as this has been shown t
 In this section, we propose a brief insight on recent developments in the use of Deep Neural Networks for the task of image colorization.
 
 \subsection{User-guided image colorization}
-Expanding upon their previous work, the authors of our main reference paper recently continued their work and proposed a new architecture for the task of colorization \cite{Zhang:2017}. In this case, however, the authors embrace the uncertain nature of the task and suggest that better colorization can be achieved through sparse and limited user input. This allows for real time correction of mistaken colors as well as the possibility to create custom colorizations.
+Expanding upon their previous work, the authors of our main reference paper recently continued their work and proposed a new architecture for the task of colorization \cite{Zhang:2017}. In this case, however, the authors embrace the uncertain nature of the task and suggest that better colorization may be achieved through sparse and limited user input. This allows for real time correction of mistaken colors as well as the possibility to create custom colorizations.
 
-The architecture proposed is similar to the previous, but is expanded upon. In fact, the number of conv-ReLU layer blocks is increased to 10, with the first 8 blocks maintaining the same architecture as before. Furthermore, these shared blocks utilize pre-trained weights from their previous experiments \cite{Zhang:2016}, which are then fine tuned during training. The added blocks are trained from scratch, and symmetric shortcut connections are added to help the network recover spatial information (not unlike a \textit{U-net} architecture).
+The architecture proposed is similar to their previous, but is expanded upon. In fact, the number of conv-ReLU layer blocks is increased to 10, with the first 8 blocks maintaining the same architecture as before. Furthermore, these shared blocks utilize pre-trained weights from their previous experiments \cite{Zhang:2016}, which are then fine tuned during training. The added blocks are trained from scratch, and symmetric shortcut connections are added to help the network recover spatial information (not unlike what happens in a \textit{U-net} architecture).
 
-We also note the presence of auxiliary networks, though we skip their discussion as they are only present to provide color suggestions to the user.
+We also note the presence of smaller, auxiliary networks, though we skip their discussion as they are only present to provide color suggestions to the user.
 
 
 \subsection{Colorization with self-attentive Generative Adversarial Networks}
 
 In his openly available work \textit{DeOldify} \cite{Jason:github}, software engineer Jason Antic shows an interesting use of self-attention mechanisms and GANs to achieve more precise colorization, as well as displaying some outstanding results in video colorization.
 
-Self-attention mechanisms \cite{Ashish:2017}, which have been shown to produce state-of-the-art results in natural language processing tasks, have recently provided good results in image-related tasks. At their essence, self attention mechanisms provide a way to model long-range dependencies between sections of an image. In other words, while convolutional networks focus on relative location and proximity, attention is able grab contextual information from distant image regions \cite{Chris:guide}; intuitively, this makes the two complementary in nature.
+Self-attention mechanisms \cite{Ashish:2017}, which have been shown to produce state-of-the-art results in the field natural language processing, have recently provided good results in image-related tasks. At their essence, self attention mechanisms provide a way to model long-range dependencies between sections of an image. In other words, while convolutional networks focus on relative location and proximity, attention is able grab contextual information from distant image regions \cite{Chris:guide}; intuitively, this makes the two complementary in nature.
 
 On the other hand, the framework of Generative Adversarial Networks (GANs) provides a novel way  to approach unsupervised learning in a manner that closely resembles game theory \cite{Ian:2014}. This framework is comprised of two networks: a \textit{generator}, which acts much like our network would, and a \textit{discriminator}, which receives data from both the ground truth and the generator. The task of the discriminator is to predict whether the data is true or artificial. The generator’s objective therefore becomes to maximise the probability that the discriminator is “fooled”, in the sense that it accepts data from the generator as true data.
 
 Very recent works combine these two approaches \cite{Han:2019}, claiming that self-attention can help the generator to recognize finer details as well as allowing the discriminator to more accurately enforce geometric constraints on the global image.
 
-While the original paper that introduced the idea of Self-attentive Generative Adversarial Networks did so with regards to an image generation task, the author of \textit{DeOldify} demonstrates that it suits the colorization task very well. Interestingly enough, the model used for the generator network follows the \textit{U-Net} architecture, much like Zhang et al.\cite{Zhang:2017} in their most recent work.
+While the original paper that introduced the idea of Self-attentive Generative Adversarial Networks did so with regards to an image generation task, the author of \textit{DeOldify} demonstrates that it suits the colorization task very well. Interestingly enough, the model used for the generator network follows a \textit{U-Net} architecture, much like Zhang et al.\cite{Zhang:2017} in their most recent work.
 
 %------------------------------------------------
 
@@ -497,7 +497,7 @@ Considering our novice state with regards to the world of deep learning, we are 
 
 All things considered, image colorization - much like many image related tasks - is difficult. Though we argued for specific issues such as the multimodal nature of colors, much of this difficulty comes from the inherent necessity for big data. Images in themselves are a particularly rich medium of information, which further amplifies these computational challenges.
 
-Works on this particular topic are very recent, and as such improvements are being published every passing year. We concluded by showcasing some of the latest developments in the field, which bring thrilling results. We are excited to see how these innovative architectures will further advance in the future.   
+Works on this particular topic are very recent, and as such improvements are being published every passing year. We concluded by showcasing some of the latest developments in the field, which bring thrilling results to the table. We are excited to see how these innovative architectures will further advance in the future.   
 
 %------------------------------------------------
 
