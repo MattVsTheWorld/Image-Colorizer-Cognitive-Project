@@ -301,8 +301,7 @@ f(P) = \frac{\exp(log(P)/T)}{\sum_q \: \exp(log(P_q)/T)}
 \newpage
 
 \section{Experimentation}
-In this section, we discuss the actual implementation and the results of our experiments. This includes an overview languages and libraries used, as well as some highlights of the code implementation. We then go on to discuss the finer details of our experiments, such as metrics considered, hyperparameters tested and hardware used. Finally, we present our results and make some considerations based upon such.
-
+In this section, we discuss the actual implementation and the results of our experiments. This includes an overview languages and libraries used, as well as some highlights of the code. We then go on to discuss the finer details of our experiments, such as data utilized, hyperparameters tested and hardware specifications. Finally, we present our results, describing our thought process in regards to error and metric values.
 
 \subsection{Implementation}
 
@@ -331,27 +330,6 @@ While we initially planned on using the full Image Net dataset \cite{Imagenet}, 
 
 Some remarks need to be made with regards to the prior color probability of the dataset (used in the class rebalancing method). While we did write our own implementation and initially used it, our final version utilizes the results as calculated by \cite{Zhang:2016}, which are publicly available \cite{Zhang:github}. Due to our limited resources, we could only manage to calculate such prior on either a small subset of our dataset or on greatly downscaled images. It is worth mentioning that, if we make a comparison, our prior factor (figure \ref{fig:oursprior}) does not differ greatly from the original authors’ (figure \ref{fig:zhangprior}). We decided nonetheless to utilize the more accurate data, as it is based on the full Image Net dataset.
 
-
-
-
-\subsection{Metrics}
-\label{sec:metrics}
-As the original author of the papers claim \cite{Zhang:2016}, evaluating the quality of synthesized images is a difficult task in itself. Common qualitative metrics, such as RMS error on pixel values, fail to capture the notion of visual realism, which is what the system is instead trying to achieve.
-One could nonetheless measure the raw prediction accuracy (L2 distance from the ground truth in the \textbf{ab} color space), but we decided against this as it does not reflect the final aim of the system (that of a plausible colorization). In fact, Zhang et al. \cite{Zhang:2016} show that a metric of the sort would give a rather good score even for an image fully colorized in gray, which is not ideal.
-
-As a result, the best way to verify the quality of the result is to perform a test on human subjects. While the scope of our experiments is nowhere near as rigorous as the referenced counterpart, we thought it would be interesting to put the results of our model to use by attempting our own version of the proposed tests.
-
-We asked fifteen partecipants to identify real images given a choice between our colorized version of a picture and its original. Each pair of pictures were shown for five seconds and 20 pairs were shown in total.
-Figure \ref{fig:testres} summarizes the results. The highest number of mistakes made is 50\% (as if all the choices were made randomly between two equally realistic images), whereas the best achieving subjects managed to have an error rate of 0\%. Our average fooling percentage is 30\%, which resembles the original authors' result of 32\%.
-
-Of course, we do not claim any scientific validity to our test, as the subject pool was far too small to prove of any significance. Nonetheless, the results are at least promising, and provide some positive feedback on the goodness of the model.
-
-\begin{figure}
-	\includegraphics[width=\linewidth]{img/graficotest.png}
-	\caption{Human "fooling" test results}
-	\label{fig:testres}
-\end{figure}
-
 \subsection{Hyperparameters}
 
 Once we finalized our implementation, we worked on tuning some of the main hyperparameters, mainly so that we could find the values that best suited the reduced scale of our experiments. 
@@ -379,6 +357,8 @@ The following are the hardware specifics for the machines used in our tests. We 
 \end{itemize}
 
 The aforementioned hardware allowed us to work on small dataset and downsized images, but in the long run did not have the GPU capabilities necessary for our needs, even on a reduced dataset. Namely, we required larger GPU memory in order to work on bigger images as well as working with larger batches. We therefore decided to move our experiments on the Google Cloud Platform \cite{GCP}, where we instantiated a virtual machine with the following specifications:
+\\
+\\
 
 \begin{itemize}
 	\item \textbf{vCPU}: 4 virtual cores;
@@ -393,11 +373,28 @@ As stated above, we initially performed training on an NVIDIA Tesla P4 GPU, but 
 
 \subsection{Performance and results}
 
-What follows is a brief overview of our experimental results. This includes an analysis of loss value trends, a recount of our most significant training runs and finally a showcase of our results.
+What follows is a brief overview of our experimental results. This includes metrics considered, an analysis of loss value trends, a recount of our most significant training runs and finally a showcase of our results.
+
+\subsubsection{Metrics}
+As the original author of the papers claim \cite{Zhang:2016}, evaluating the quality of synthesized images is a difficult task in itself. Common qualitative metrics, such as RMS error on pixel values, fail to capture the notion of visual realism, which is what the system is instead trying to achieve.
+One could nonetheless measure the raw prediction accuracy (L2 distance from the ground truth in the \textbf{ab} color space), but we decided against this as it does not reflect the final aim of the system (that of a plausible colorization). In fact, Zhang et al. \cite{Zhang:2016} show that a metric of the sort would give a rather good score even for an image fully colorized in gray, which is not ideal.
+
+As a result, the best way to verify the quality of the result is to perform a test on human subjects. While the scope of our experiments is nowhere near as rigorous as the referenced counterpart, we thought it would be interesting to put the results of our model to use by attempting our own version of the proposed tests.
+
+We asked fifteen partecipants to identify real images given a choice between our colorized version of a picture and its original. Each pair of pictures were shown for five seconds and 20 pairs were shown in total.
+Figure \ref{fig:testres} summarizes the results. The highest number of mistakes made is 50\% (as if all the choices were made randomly between two equally realistic images), whereas the best achieving subjects managed to have an error rate of 0\%. Our average fooling percentage is 30\%, which resembles the original authors' result of 32\%.
+
+Of course, we do not claim any scientific validity to our test, as the subject pool was far too small to prove of any significance. Nonetheless, the results are at least promising, and provide some positive feedback on the goodness of the model.
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{img/graficotest.png}
+	\caption{Human "fooling" test results}
+	\label{fig:testres}
+\end{figure}
 
 \subsubsection{Loss}
 
-As previously discussed in the \textit{\hyperref[sec:metrics]{metrics}} section, commonly used metrics are difficult to apply to a problem of this kind, as the objective of the system is to produce a subjectively \textit{plausible} result.
+As just claimed, commonly used metrics are difficult to apply to a problem of this kind, as the objective of the system is to produce a subjectively \textit{plausible} result.
 Therefore, while it may seem unsatisfactory in some ways, one has to rely on a pure analysis of loss values throughout training epochs. We remind the reader that this value represents the mean difference between the predicted probability distribution of colors and the actual distribution obtained through soft encoding of the ground truth.
 
 Empirically speaking, we found that the system first produces some promising results when validation loss falls below a value of 5, when it gains the confidence to attempt some vivid colorizations. In earlier epochs, resulting pictures are still desaturated and grayish. Learning slows massively around the value of 4, where it begins a slow descent. Finally, in later epochs the system becomes more adept at recognizing shapes and coloring them correctly. As one would expected, we find that a good indicator of how well training is proceeding is how consistent the value of loss in training is with its validation counterpart. 
