@@ -327,7 +327,7 @@ Some remarks need to be made with regards to the prior color probability of the 
 
 
 \subsection{Metrics}
-
+\label{sec:metrics}
 As the original author of the papers claim \cite{Zhang:2016}, evaluating the quality of synthesized images is a difficult task in itself. Common qualitative metrics, such as RMS error on pixel values, fail to capture the notion of visual realism, which is what the system is instead trying to achieve.
 One could nonetheless measure the raw prediction accuracy (L2 distance from the ground truth in the \textbf{ab} color space), but we decided against this as it does not reflect the final aim of the system (that of a plausible colorization). In fact, Zhang et al. \cite{Zhang:2016} show that a metric of the sort would give a rather good score even for an image fully colorized in gray, which is not ideal.\\
 As a result, the best way to verify the quality of the result is to perform a test on human subjects. While the scope of our experiments is nowhere near as rigorous as the referenced counterpart, we thought it would be interesting to put the results of our model to use by attempting our own version of the proposed tests.\\
@@ -382,12 +382,14 @@ As stated above, we initially performed training on an NVIDIA Tesla P4 GPU, but 
 
 \subsection{Performance and results}
 
-What follows is a brief description of our experimental results. This includes a brief analysis of the loss value trends, a recount of our most significant training runs and finally a showcase of our results.
+What follows is a brief overview of our experimental results. This includes an analysis of loss value trends, a recount of our most significant training runs and finally a showcase of our results.
 
 \subsubsection{Loss}
 
-As previously discussed in the metrics paragraph, commonly used metrics are hard or impossible to apply to a problem of this kind, as the final aim of the system is to produce a plausible result. While it may seem unsatisfactory to simply observe a loss value decrease, one has to remember that this value represents the mean difference between the predicted probability distribution of colors and the actual distribution obtained by the soft encoding of the ground truth.
-We found that the system first produces some acceptable results below the value of 5, when it gains the confidence to attempt some vivid colorizations. In earlier epochs resulting pictures are still desaturated and grayish. Learning slows massively around the value of 4, where it begins a slow descent. Finally, in later epochs the system becomes more adept at recognizing shapes and coloring them correctly.
+As previously discussed in the \textit{\hyperref[sec:metrics]{metrics}} section, commonly used metrics are difficult to apply to a problem of this kind, as the objective of the system is to produce a subjectively \textit{plausible} result.
+Therefore, while it may seem unsatisfactory in some ways, one has to rely on a pure analysis of loss values throughout training epochs. We remind the reader that this value represents the mean difference between the predicted probability distribution of colors and the actual distribution obtained through soft encoding of the ground truth.
+
+Empirically speaking, we found that the system first produces some promising results when validation loss falls below a value of 5, when it gains the confidence to attempt some vivid colorizations. In earlier epochs, resulting pictures are still desaturated and grayish. Learning slows massively around the value of 4, where it begins a slow descent. Finally, in later epochs the system becomes more adept at recognizing shapes and coloring them correctly. As one would expected, we find that a good indicator of how well training is proceeding is how consistent the value of loss in training is with its validation counterpart. 
 
 \subsubsection{Training runs}
 
